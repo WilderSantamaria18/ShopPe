@@ -43,6 +43,7 @@ fun MisPedidosScreen(
     val filteredPedidos by viewModel.filteredPedidos.collectAsState(emptyList())
     val selectedFilter by viewModel.selectedFilter.collectAsState()
     val totalMes by viewModel.totalGastoMes.collectAsState(0.0)
+    val uiError by viewModel.uiError.collectAsState()
 
     val pinkPrimary = Color(0xFFAB005A)
     val pinkContainer = Color(0xFFD80073)
@@ -109,9 +110,51 @@ fun MisPedidosScreen(
                 )
             }
 
-            // Order List
-            items(filteredPedidos) { pedido ->
-                OrderCard(pedido)
+            // Order List / Error Message / Empty state
+            if (uiError != null) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 40.dp)
+                            .clip(RoundedCornerShape(32.dp))
+                            .background(Color(0xFFFFDAD6))
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = Color(0xFFBA1A1A), modifier = Modifier.size(48.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = uiError!!,
+                            color = Color(0xFF410002),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Button(
+                            onClick = { /* Refresh could be re-calling repository */ },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFBA1A1A)),
+                            shape = CircleShape
+                        ) {
+                            Text("Reintentar")
+                        }
+                    }
+                }
+            } else if (filteredPedidos.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 60.dp), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.Inventory2, contentDescription = null, modifier = Modifier.size(80.dp), tint = Color.Gray.copy(alpha = 0.3f))
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text("No se encontraron pedidos", color = Color.Gray)
+                        }
+                    }
+                }
+            } else {
+                items(filteredPedidos) { pedido ->
+                    OrderCard(pedido)
+                }
             }
 
             // Purchase Summary Bento

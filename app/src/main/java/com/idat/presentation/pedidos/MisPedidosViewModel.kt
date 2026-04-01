@@ -21,10 +21,23 @@ class MisPedidosViewModel @Inject constructor(
     private val _selectedFilter = MutableStateFlow("Todos")
     val selectedFilter: StateFlow<String> = _selectedFilter.asStateFlow()
 
+    private val _uiError = MutableStateFlow<String?>(null)
+    val uiError: StateFlow<String?> = _uiError.asStateFlow()
+
     init {
         auth.currentUser?.uid?.let { userId ->
             repository.getPedidosByUser(userId)
-                .onEach { _pedidos.value = it }
+                .catch { e -> 
+                    if (e.message?.contains("PERMISSION_DENIED") == true) {
+                        _uiError.value = "Permisos de acceso denegados. Por favor actualiza las reglas en la consola de Firebase."
+                    } else {
+                        _uiError.value = "Error al conectar con la base de datos: ${e.localizedMessage}"
+                    }
+                }
+                .onEach { 
+                    _pedidos.value = it 
+                    _uiError.value = null // Reset error if data loads
+                }
                 .launchIn(viewModelScope)
         }
     }
