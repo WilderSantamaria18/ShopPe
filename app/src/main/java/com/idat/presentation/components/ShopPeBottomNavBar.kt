@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -25,132 +26,148 @@ fun ShopPeBottomNavBar(
     currentSelection: String = "Explore",
     onTabSelected: (String) -> Unit = {},
     // Navbar Actions
+    onNavigateToCatalogo: () -> Unit = {},
     onNavigateToFavoritos: () -> Unit = {},
-    onNavigateToPersonalizacion: () -> Unit = {},
-    onNavigateToConfiguracion: () -> Unit = {},
-    onNavigateToGestion: () -> Unit = {},
-    onNavigateToAyuda: () -> Unit = {},
     onNavigateToCarrito: () -> Unit = {},
+    onNavigateToGestion: () -> Unit = {},
+    onNavigateToPedidos: () -> Unit = {},
+    onNavigateToAyuda: () -> Unit = {},
+    onNavigateToConfiguracion: () -> Unit = {},
+    onNavigateToPersonalizacion: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
 ) {
-    var showProfileMenu by remember { mutableStateOf(false) }
+    val pinkPrimary = Color(0xFFAB005A)
+    val inactiveColor = Color(0xFF8E6F77)
 
-    Row(
+    Box(
         modifier = modifier
             .fillMaxWidth()
+            .padding(bottom = 24.dp, start = 12.dp, end = 12.dp)
             .clip(RoundedCornerShape(32.dp))
-            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.9f))
-            .padding(12.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f))
+            .shadow(
+                elevation = 16.dp,
+                shape = RoundedCornerShape(32.dp),
+                ambientColor = pinkPrimary.copy(alpha = 0.1f),
+                spotColor = pinkPrimary.copy(alpha = 0.1f)
+            )
+            .padding(8.dp)
     ) {
-        NavBarItemSquare(
-            icon = Icons.Default.Explore, label = "EXPLORAR",
-            isSelected = currentSelection == "Explore", onClick = { onTabSelected("Explore") }
-        )
-        NavBarItemSquare(
-            icon = Icons.Default.ShoppingCart, label = "CARRITO",
-            isSelected = currentSelection == "Bag", onClick = { onTabSelected("Bag"); onNavigateToCarrito() }
-        )
-        // Gestión is now titled "PRODUCTOS"
-        NavBarItemSquare(
-            icon = Icons.Default.Inventory, label = "PRODUCTOS",
-            isSelected = currentSelection == "Gestion", onClick = { onTabSelected("Gestion"); onNavigateToGestion() }
-        )
-        
-        // Profile Item with Dropdown Menu
-        Box {
-            NavBarItemSquare(
-                icon = Icons.Default.Person, label = "PERFIL",
-                isSelected = currentSelection == "Perfil" || showProfileMenu, onClick = { showProfileMenu = true }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            NavItem(
+                icon = Icons.Default.Explore,
+                label = "Descubrir",
+                isActive = currentSelection == "Explore",
+                onClick = { onTabSelected("Explore"); onNavigateToCatalogo() }
+            )
+            NavItem(
+                icon = Icons.Default.Search,
+                label = "Buscar",
+                isActive = currentSelection == "Search",
+                onClick = { onTabSelected("Search"); onNavigateToCatalogo() } // Placeholder: opens catalog
+            )
+            NavItem(
+                icon = if (currentSelection == "Favoritos") Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                label = "Mis Favoritos",
+                isActive = currentSelection == "Favoritos",
+                onClick = { onTabSelected("Favoritos"); onNavigateToFavoritos() }
+            )
+            NavItem(
+                icon = Icons.Default.ShoppingBag,
+                label = "Bolsa",
+                isActive = currentSelection == "Bag",
+                onClick = { onTabSelected("Bag"); onNavigateToCarrito() }
             )
             
-            DropdownMenu(
-                expanded = showProfileMenu,
-                onDismissRequest = { showProfileMenu = false },
-                modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant) // Approximate SurfaceContainerHighest
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Favoritos", color = MaterialTheme.colorScheme.onSurface) },
-                    onClick = { showProfileMenu = false; onNavigateToFavoritos() },
-                    leadingIcon = { Icon(Icons.Default.FavoriteBorder, contentDescription = null, tint = MaterialTheme.colorScheme.secondary) }
+            // Profile context with a simple long press for logout or just a button to Gestion/Profile
+            var showProfileMenu by remember { mutableStateOf(false) }
+            Box {
+                NavItem(
+                    icon = Icons.Default.Person,
+                    label = "Perfil",
+                    isActive = currentSelection == "Perfil" || showProfileMenu,
+                    onClick = { showProfileMenu = true }
                 )
-                DropdownMenuItem(
-                    text = { Text("Personalización", color = MaterialTheme.colorScheme.onSurface) },
-                    onClick = { showProfileMenu = false; onNavigateToPersonalizacion() },
-                    leadingIcon = { Icon(Icons.Default.AutoFixHigh, contentDescription = null, tint = MaterialTheme.colorScheme.secondary) }
-                )
-                DropdownMenuItem(
-                    text = { Text("Ajustes", color = MaterialTheme.colorScheme.onSurface) },
-                    onClick = { showProfileMenu = false; onNavigateToConfiguracion() },
-                    leadingIcon = { Icon(Icons.Default.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.secondary) }
-                )
-                DropdownMenuItem(
-                    text = { Text("Ayuda", color = MaterialTheme.colorScheme.onSurface) },
-                    onClick = { showProfileMenu = false; onNavigateToAyuda() },
-                    leadingIcon = { Icon(Icons.Default.HelpOutline, contentDescription = null, tint = MaterialTheme.colorScheme.secondary) }
-                )
-                Divider(modifier = Modifier.padding(vertical = 4.dp))
-                DropdownMenuItem(
-                    text = { Text("Cerrar Sesión", color = MaterialTheme.colorScheme.primary) },
-                    onClick = { showProfileMenu = false; onCerrarSesion() },
-                    leadingIcon = { Icon(Icons.Default.Logout, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
-                )
+                
+                DropdownMenu(
+                    expanded = showProfileMenu,
+                    onDismissRequest = { showProfileMenu = false },
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Mis Pedidos", color = MaterialTheme.colorScheme.onSurface) },
+                        onClick = { showProfileMenu = false; onNavigateToPedidos() },
+                        leadingIcon = { Icon(Icons.Default.ReceiptLong, contentDescription = null, tint = pinkPrimary) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Personalización", color = MaterialTheme.colorScheme.onSurface) },
+                        onClick = { showProfileMenu = false; onNavigateToPersonalizacion() },
+                        leadingIcon = { Icon(Icons.Default.AutoFixHigh, contentDescription = null, tint = pinkPrimary) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Configuración", color = MaterialTheme.colorScheme.onSurface) },
+                        onClick = { showProfileMenu = false; onNavigateToConfiguracion() },
+                        leadingIcon = { Icon(Icons.Default.Settings, contentDescription = null, tint = pinkPrimary) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Gestión de Inventario", color = MaterialTheme.colorScheme.onSurface) },
+                        onClick = { showProfileMenu = false; onNavigateToGestion() },
+                        leadingIcon = { Icon(Icons.Default.Inventory, contentDescription = null, tint = pinkPrimary) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Ayuda", color = MaterialTheme.colorScheme.onSurface) },
+                        onClick = { showProfileMenu = false; onNavigateToAyuda() },
+                        leadingIcon = { Icon(Icons.Default.HelpOutline, contentDescription = null, tint = pinkPrimary) }
+                    )
+                    Divider(modifier = Modifier.padding(vertical = 4.dp))
+                    DropdownMenuItem(
+                        text = { Text("Cerrar Sesión", color = MaterialTheme.colorScheme.primary) },
+                        onClick = { showProfileMenu = false; onCerrarSesion() },
+                        leadingIcon = { Icon(Icons.Default.Logout, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-fun NavBarItemSquare(
+fun NavItem(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
-    isSelected: Boolean,
+    isActive: Boolean,
     onClick: () -> Unit
 ) {
-    val containerModifier = if (isSelected) {
-        Modifier
-            .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
-                )
-            )
-    } else {
-        Modifier.background(Color.Transparent)
-    }
-
-    val contentColor = if (isSelected) {
-        Color.White
-    } else {
-        MaterialTheme.colorScheme.secondary
-    }
-
+    val pinkPrimary = Color(0xFFAB005A)
+    val inactiveColor = Color(0xFF8E6F77)
+    
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
-            .size(72.dp) // Square dimensions
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
+            .background(if (isActive) Color(0xFFFFE8ED) else Color.Transparent)
             .clickable { onClick() }
-            .then(containerModifier)
-            .padding(4.dp)
+            .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
         Icon(
             imageVector = icon,
             contentDescription = label,
-            tint = contentColor,
+            tint = if (isActive) pinkPrimary else inactiveColor,
             modifier = Modifier.size(24.dp)
         )
-        Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = label,
-            fontSize = 9.sp,
+            fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
-            color = contentColor,
-            letterSpacing = 0.5.sp,
+            color = if (isActive) pinkPrimary else inactiveColor,
+            modifier = Modifier.padding(top = 4.dp),
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

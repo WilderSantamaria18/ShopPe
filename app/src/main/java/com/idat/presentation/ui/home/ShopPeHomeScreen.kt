@@ -47,11 +47,12 @@ fun ShopPeHomeScreen(
     isProductFavorite: suspend (Int) -> Boolean = { false },
     // Navbar Actions
     onNavigateToFavoritos: () -> Unit = {},
-    onNavigateToPersonalizacion: () -> Unit = {},
-    onNavigateToConfiguracion: () -> Unit = {},
     onNavigateToGestion: () -> Unit = {},
     onNavigateToAyuda: () -> Unit = {},
     onNavigateToCarrito: () -> Unit = {},
+    onNavigateToPedidos: () -> Unit = {},
+    onNavigateToConfiguracion: () -> Unit = {},
+    onNavigateToPersonalizacion: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
 ) {
     val isDark = MaterialTheme.colorScheme.surface == Color(0xFF140C0E)
@@ -95,12 +96,15 @@ fun ShopPeHomeScreen(
                 contentAlignment = Alignment.Center
             ) {
                 ShopPeBottomNavBar(
+                    currentSelection = "Explore",
+                    onNavigateToCatalogo = { /* Already here or navigate to catalogo */ },
                     onNavigateToFavoritos = onNavigateToFavoritos,
-                    onNavigateToPersonalizacion = onNavigateToPersonalizacion,
-                    onNavigateToConfiguracion = onNavigateToConfiguracion,
-                    onNavigateToGestion = onNavigateToGestion,
-                    onNavigateToAyuda = onNavigateToAyuda,
                     onNavigateToCarrito = onNavigateToCarrito,
+                    onNavigateToGestion = onNavigateToGestion,
+                    onNavigateToPedidos = onNavigateToPedidos,
+                    onNavigateToAyuda = onNavigateToAyuda,
+                    onNavigateToConfiguracion = onNavigateToConfiguracion,
+                    onNavigateToPersonalizacion = onNavigateToPersonalizacion,
                     onCerrarSesion = onCerrarSesion
                 )
             }

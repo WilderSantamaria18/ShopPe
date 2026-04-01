@@ -1,5 +1,6 @@
 package com.idat.presentation.carrito
 
+import com.idat.presentation.components.ShopPeBottomNavBar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -78,6 +79,24 @@ fun CarritoScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
                 )
+            )
+        },
+        bottomBar = {
+            ShopPeBottomNavBar(
+                currentSelection = "Bag",
+                onNavigateToCatalogo = { navController.navigate("catalogo") },
+                onNavigateToFavoritos = { navController.navigate("favoritos/fromCart") },
+                onNavigateToCarrito = { /* Already here */ },
+                onNavigateToGestion = { navController.navigate("gestion/fromCart") },
+                onNavigateToPedidos = { navController.navigate("mis_pedidos") },
+                onNavigateToAyuda = { navController.navigate("ayuda/fromCart") },
+                onNavigateToConfiguracion = { navController.navigate("configuracion/fromCart") },
+                onNavigateToPersonalizacion = { navController.navigate("personalizacion/fromCart") },
+                onCerrarSesion = { 
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
     ) { paddingValues ->

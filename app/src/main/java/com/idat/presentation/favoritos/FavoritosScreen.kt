@@ -1,5 +1,6 @@
 package com.idat.presentation.favoritos
 
+import com.idat.presentation.components.ShopPeBottomNavBar
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.*
@@ -78,7 +79,22 @@ fun FavoritosScreen(
             )
         },
         bottomBar = {
-            FavoritosBottomNavBar(navController)
+            ShopPeBottomNavBar(
+                currentSelection = "Favoritos",
+                onNavigateToCatalogo = { navController.navigate("catalogo") },
+                onNavigateToFavoritos = { /* Already here */ },
+                onNavigateToCarrito = { navController.navigate("carrito") },
+                onNavigateToGestion = { navController.navigate("gestion/fromFav") },
+                onNavigateToPedidos = { navController.navigate("mis_pedidos") },
+                onNavigateToAyuda = { navController.navigate("ayuda/fromFav") },
+                onNavigateToConfiguracion = { navController.navigate("configuracion/fromFav") },
+                onNavigateToPersonalizacion = { navController.navigate("personalizacion/fromFav") },
+                onCerrarSesion = { 
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
     ) { paddingValues ->
         LazyVerticalGrid(
@@ -291,54 +307,4 @@ fun EmptyFavoritesState() {
     }
 }
 
-@Composable
-fun FavoritosBottomNavBar(navController: NavHostController) {
-    val pinkPrimary = Color(0xFFAB005A)
-    val inactiveColor = Color(0xFF8E6F77)
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 24.dp, start = 12.dp, end = 12.dp)
-            .clip(RoundedCornerShape(32.dp))
-            .background(Color.White.copy(alpha = 0.95f))
-            .padding(8.dp)
-    ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-            NavItem(Icons.Default.Explore, "Descubrir", false) { navController.navigate("catalogo") }
-            NavItem(Icons.Default.Search, "Buscar", false) { navController.navigate("catalogo") }
-            NavItem(Icons.Default.Favorite, "Favoritos", true) { /* Already here */ }
-            NavItem(Icons.Default.ShoppingBag, "Bolsa", false) { navController.navigate("carrito") }
-            NavItem(Icons.Default.Person, "Perfil", false) { /* Profile */ }
-        }
-    }
-}
-
-@Composable
-fun NavItem(icon: ImageVector, label: String, isActive: Boolean, onClick: () -> Unit) {
-    val pinkPrimary = Color(0xFFAB005A)
-    val inactiveColor = Color(0xFF8E6F77)
-    
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(if (isActive) Color(0xFFFFE8ED) else Color.Transparent)
-            .clickable { onClick() }
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-    ) {
-        Icon(
-            icon,
-            contentDescription = null,
-            tint = if (isActive) pinkPrimary else inactiveColor,
-            modifier = Modifier.size(24.dp)
-        )
-        Text(
-            label,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            color = if (isActive) pinkPrimary else inactiveColor,
-            modifier = Modifier.padding(top = 4.dp)
-        )
-    }
-}

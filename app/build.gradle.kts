@@ -15,12 +15,12 @@ plugins {
 
 android {
     namespace = "com.idat"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.idat.tiendonline"
         minSdk = 29
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -67,45 +67,36 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3) // Using version from catalog/BOM
 
-    // 🔹 Material3 estable
-    implementation("androidx.compose.material3:material3:1.2.0")
+    // 🔹 Navigation & ViewModel
+    implementation("androidx.navigation:navigation-compose:2.8.3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 
-    // 🔹 Compose extras
-    implementation("androidx.compose.runtime:runtime-livedata:1.7.5")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
-    implementation("androidx.navigation:navigation-compose:2.7.0")
+    // 🔹 Material Icons (Extended)
+    implementation("androidx.compose.material:material-icons-extended")
 
     // 🔹 Firebase
-    implementation(platform("com.google.firebase:firebase-bom:32.2.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
     
     // 🔹 Google Sign-In
-    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
 
-    // 🔹 DataStore Preferences
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
-
-    // 🔹 Retrofit
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    // 🔹 DataStore & Network
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
 
     // 🔹 Hilt
-    implementation("com.google.dagger:hilt-android:2.48")
-    kapt("com.google.dagger:hilt-compiler:2.48")
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    kapt("com.google.dagger:hilt-compiler:2.51.1")
 
-    // Jetpack Compose
-    implementation("androidx.compose.ui:ui:1.5.4")
-    implementation("androidx.navigation:navigation-compose:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
-
-    // Hilt para ViewModel
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
-
-    // Material icons (extended)
-    implementation("androidx.compose.material:material-icons-extended:1.5.4")
+    // 🔹 Image Loading
+    implementation("io.coil-kt:coil-compose:2.7.0")
 
     // 🔹 Testing
     testImplementation(libs.junit)

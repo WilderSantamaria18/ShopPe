@@ -1,5 +1,6 @@
 package com.idat.presentation.gestion
 
+import com.idat.presentation.components.ShopPeBottomNavBar
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -90,7 +91,22 @@ fun GestionProductosScreen(
         },
         bottomBar = {
             if (currentMode == GestionMode.LIST) {
-                GestionBottomNavBar()
+                ShopPeBottomNavBar(
+                    currentSelection = "Perfil",
+                    onNavigateToCatalogo = { navController.navigate("catalogo") },
+                    onNavigateToFavoritos = { navController.navigate("favoritos/fromGestion") },
+                    onNavigateToCarrito = { navController.navigate("carrito") },
+                    onNavigateToGestion = { /* Already here */ },
+                    onNavigateToPedidos = { navController.navigate("mis_pedidos") },
+                    onNavigateToAyuda = { navController.navigate("ayuda/fromGestion") },
+                    onNavigateToConfiguracion = { navController.navigate("configuracion/fromGestion") },
+                    onNavigateToPersonalizacion = { navController.navigate("personalizacion/fromGestion") },
+                    onCerrarSesion = { 
+                        navController.navigate("login") {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -465,35 +481,4 @@ fun MetricBox(modifier: Modifier, label: String, value: String, onValueChange: (
     }
 }
 
-@Composable
-fun GestionBottomNavBar() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
-            .background(Color.White.copy(alpha = 0.8f))
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp), horizontalArrangement = Arrangement.SpaceAround) {
-            GestionNavBarItem(icon = Icons.Default.Dashboard, label = "Dashboard", active = false)
-            GestionNavBarItem(icon = Icons.Default.Inventory2, label = "Inventario", active = true)
-            GestionNavBarItem(icon = Icons.Default.ShoppingBag, label = "Pedidos", active = false)
-            GestionNavBarItem(icon = Icons.Default.Settings, label = "Ajustes", active = false)
-        }
-    }
-}
 
-@Composable
-fun GestionNavBarItem(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, active: Boolean) {
-    val pinkPrimary = Color(0xFFAB005A)
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(if (active) Color(0xFFFFE8ED) else Color.Transparent)
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Icon(icon, contentDescription = null, tint = if (active) pinkPrimary else Color.Gray, modifier = Modifier.size(24.dp))
-        Text(label, fontSize = 11.sp, fontWeight = if (active) FontWeight.Bold else FontWeight.Medium, color = if (active) pinkPrimary else Color.Gray)
-    }
-}

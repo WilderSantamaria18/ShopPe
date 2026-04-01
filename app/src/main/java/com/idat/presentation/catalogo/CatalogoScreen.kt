@@ -46,6 +46,7 @@ fun CatalogoScreen(
         onNavigateToGestion = { navController.navigate("gestion/fromDrawer") },
         onNavigateToAyuda = { navController.navigate("ayuda/fromDrawer") },
         onNavigateToCarrito = { navController.navigate("carrito") },
+        onNavigateToPedidos = { navController.navigate("mis_pedidos") },
         onCerrarSesion = { mostrarDialogoCerrarSesion = true }
     )
 
