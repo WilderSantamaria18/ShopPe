@@ -20,6 +20,7 @@ import com.idat.presentation.ayuda.AyudaScreen
 import com.idat.presentation.pago.PagoScreen
 import com.idat.presentation.pago.PedidoConfirmadoScreen
 import com.idat.presentation.pedidos.MisPedidosScreen
+import com.idat.presentation.pedidos.DetallePedidoScreen
 
 
 @Composable
@@ -37,6 +38,13 @@ fun AppNavigation(navController: NavHostController) {
         composable("pago") { PagoScreen(navController) }
         composable("pedidoConfirmado") { PedidoConfirmadoScreen(navController) }
         composable("mis_pedidos") { MisPedidosScreen(navController) }
+        composable(
+            route = "detalle_pedido/{pedidoId}",
+            arguments = listOf(navArgument("pedidoId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val pedidoId = backStackEntry.arguments?.getString("pedidoId") ?: ""
+            DetallePedidoScreen(navController, pedidoId)
+        }
         composable(
             route = "detalle/{productoId}",
             arguments = listOf(navArgument("productoId") { type = NavType.IntType })

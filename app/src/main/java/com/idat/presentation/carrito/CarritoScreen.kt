@@ -82,22 +82,76 @@ fun CarritoScreen(
             )
         },
         bottomBar = {
-            ShopPeBottomNavBar(
-                currentSelection = "Bag",
-                onNavigateToCatalogo = { navController.navigate("catalogo") },
-                onNavigateToFavoritos = { navController.navigate("favoritos/fromCart") },
-                onNavigateToCarrito = { /* Already here */ },
-                onNavigateToGestion = { navController.navigate("gestion/fromCart") },
-                onNavigateToPedidos = { navController.navigate("mis_pedidos") },
-                onNavigateToAyuda = { navController.navigate("ayuda/fromCart") },
-                onNavigateToConfiguracion = { navController.navigate("configuracion/fromCart") },
-                onNavigateToPersonalizacion = { navController.navigate("personalizacion/fromCart") },
-                onCerrarSesion = { 
-                    navController.navigate("login") {
-                        popUpTo(0) { inclusive = true }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
+                    .background(surfaceContainerLowest.copy(alpha = 0.95f))
+            ) {
+                // Fixed Bottom Action Area (Checkout Summary)
+                if (productos.isNotEmpty()) {
+                    Column(
+                        modifier = Modifier.padding(start = 32.dp, end = 32.dp, top = 24.dp, bottom = 12.dp)
+                    ) {
+                        // Summary lines
+                        Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Total", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+                            Text("S/ ${String.format("%.2f", total)}", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+                        }
+
+                        // CTA Button
+                        Button(
+                            onClick = { navController.navigate("pago") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            contentPadding = PaddingValues()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        brush = Brush.linearGradient(
+                                            colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
+                                        )
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "Proceder al Pago",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Icon(Icons.Default.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        }
                     }
                 }
-            )
+
+                // Standard Navigation Bar
+                ShopPeBottomNavBar(
+                    currentSelection = "Bag",
+                    onNavigateToCatalogo = { navController.navigate("catalogo") },
+                    onNavigateToFavoritos = { navController.navigate("favoritos/fromCart") },
+                    onNavigateToCarrito = { /* Already here */ },
+                    onNavigateToGestion = { navController.navigate("gestion/fromCart") },
+                    onNavigateToPedidos = { navController.navigate("mis_pedidos") },
+                    onNavigateToAyuda = { navController.navigate("ayuda/fromCart") },
+                    onNavigateToConfiguracion = { navController.navigate("configuracion/fromCart") },
+                    onNavigateToPersonalizacion = { navController.navigate("personalizacion/fromCart") },
+                    onCerrarSesion = { 
+                        navController.navigate("login") {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
+            }
         }
     ) { paddingValues ->
         if (productos.isEmpty()) {
@@ -151,63 +205,6 @@ fun CarritoScreen(
                     }
                 }
 
-                // Fixed Bottom Action Area
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
-                        .background(surfaceContainerLowest.copy(alpha = 0.95f))
-                        // Optional padding for bottom navigation bars on system: .navigationBarsPadding()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(start = 32.dp, end = 32.dp, top = 32.dp, bottom = 40.dp)
-                    ) {
-                        // Summary lines
-                        Row(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Subtotal", color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
-                            Text("S/ ${String.format("%.2f", total)}", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
-                        }
-                        Row(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Envío (Shipping)", color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
-                            Text("GRATIS", color = MaterialTheme.colorScheme.tertiary, fontWeight = FontWeight.Bold)
-                        }
-                        Row(modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 32.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text("Total", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.5).sp, color = MaterialTheme.colorScheme.onSurface)
-                            Text("S/ ${String.format("%.2f", total)}", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
-                        }
-
-                        // CTA Button
-                        Button(
-                            onClick = { navController.navigate("pago") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(64.dp),
-                            shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                            contentPadding = PaddingValues()
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(
-                                        brush = Brush.linearGradient(
-                                            colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
-                                        )
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Proceder al Pago",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                    letterSpacing = 1.sp
-                                )
-                            }
-                        }
-                    }
-                }
             }
         }
     }

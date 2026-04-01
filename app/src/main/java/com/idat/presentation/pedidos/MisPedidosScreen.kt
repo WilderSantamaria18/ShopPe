@@ -153,7 +153,7 @@ fun MisPedidosScreen(
                 }
             } else {
                 items(filteredPedidos) { pedido ->
-                    OrderCard(pedido)
+                    OrderCard(pedido, navController)
                 }
             }
 
@@ -166,13 +166,14 @@ fun MisPedidosScreen(
 }
 
 @Composable
-fun OrderCard(pedido: Pedido) {
+fun OrderCard(pedido: Pedido, navController: NavHostController) {
     val pinkPrimary = Color(0xFFAB005A)
     val pinkContainer = Color(0xFFD80073)
     val onSurfaceVariant = Color(0xFF5A3F47)
     
     val (statusLabel, statusBg, statusText) = when (pedido.estado.lowercase()) {
         "entregado" -> Triple("ENTREGADO", Color(0xFFE6F4EA), Color(0xFF1E8E3E))
+        "pendiente" -> Triple("PENDIENTE", Color(0xFFFFF7E0), Color(0xFFF2994A))
         "procesando" -> Triple("PROCESANDO", Color(0xFFFFF7E0), Color(0xFFF09300))
         "cancelado" -> Triple("CANCELADO", Color(0xFFFFEAEA), Color(0xFFD93025))
         else -> Triple("EN CAMINO", Color(0xFFFFE8ED), pinkPrimary)
@@ -283,7 +284,7 @@ fun OrderCard(pedido: Pedido) {
             
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(
-                    onClick = { /* Rastrear */ },
+                    onClick = { navController.navigate("detalle_pedido/${pedido.id}") },
                     modifier = Modifier.weight(1f).height(52.dp),
                     shape = RoundedCornerShape(18.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
@@ -295,7 +296,7 @@ fun OrderCard(pedido: Pedido) {
                             .background(Brush.linearGradient(listOf(pinkPrimary, pinkContainer))),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("Rastrear pedido", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("Ver detalle", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                     }
                 }
                 
@@ -312,7 +313,7 @@ fun OrderCard(pedido: Pedido) {
 
 @Composable
 fun FilterTabs(selected: String, onSelect: (String) -> Unit) {
-    val filters = listOf("Todos", "Procesando", "Entregado")
+    val filters = listOf("Todos", "Pendiente", "Entregado")
     val pinkPrimary = Color(0xFFAB005A)
 
     LazyRow(

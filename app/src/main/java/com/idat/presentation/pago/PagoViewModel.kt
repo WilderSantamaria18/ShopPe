@@ -43,6 +43,7 @@ class PagoViewModel @Inject constructor(
             val pedido = Pedido(
                 id = "SP-${UUID.randomUUID().toString().take(6).uppercase()}",
                 total = totalAmount.value,
+                estado = "Pendiente",
                 items = items,
                 userId = userId
             )
