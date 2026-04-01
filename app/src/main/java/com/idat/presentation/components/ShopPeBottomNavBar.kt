@@ -1,5 +1,7 @@
 package com.idat.presentation.components
 
+import com.google.firebase.auth.FirebaseAuth
+import com.idat.core.auth.AdminAccess
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -38,6 +40,7 @@ fun ShopPeBottomNavBar(
 ) {
     val pinkPrimary = Color(0xFFAB005A)
     val inactiveColor = Color(0xFF8E6F77)
+    val isAdmin = AdminAccess.isAdminEmail(FirebaseAuth.getInstance().currentUser?.email)
 
     Box(
         modifier = modifier
@@ -113,11 +116,13 @@ fun ShopPeBottomNavBar(
                         onClick = { showProfileMenu = false; onNavigateToConfiguracion() },
                         leadingIcon = { Icon(Icons.Default.Settings, contentDescription = null, tint = pinkPrimary) }
                     )
-                    DropdownMenuItem(
-                        text = { Text("Gestión de Inventario", color = MaterialTheme.colorScheme.onSurface) },
-                        onClick = { showProfileMenu = false; onNavigateToGestion() },
-                        leadingIcon = { Icon(Icons.Default.Inventory, contentDescription = null, tint = pinkPrimary) }
-                    )
+                    if (isAdmin) {
+                        DropdownMenuItem(
+                            text = { Text("Gestión de Inventario", color = MaterialTheme.colorScheme.onSurface) },
+                            onClick = { showProfileMenu = false; onNavigateToGestion() },
+                            leadingIcon = { Icon(Icons.Default.Inventory, contentDescription = null, tint = pinkPrimary) }
+                        )
+                    }
                     DropdownMenuItem(
                         text = { Text("Ayuda", color = MaterialTheme.colorScheme.onSurface) },
                         onClick = { showProfileMenu = false; onNavigateToAyuda() },
