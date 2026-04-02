@@ -4,9 +4,12 @@ import java.util.Date
 
 data class Pedido(
     val id: String = "",
+    val numComprobante: String = "", // Ejemplo: B001-000001
     val fecha: Long = System.currentTimeMillis(),
-    val estado: String = "Pendiente", // Pendiente, Procesando, En camino, Entregado, Cancelados
+    val estado: String = "Pendiente",
     val total: Double = 0.0,
     val items: List<ItemCarrito> = emptyList(),
-    val userId: String = ""
+    val userId: String = "",
+    val clienteEmail: String = "",
+    val clienteNombre: String = ""
 )

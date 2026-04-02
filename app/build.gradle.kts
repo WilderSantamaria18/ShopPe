@@ -98,6 +98,13 @@ dependencies {
     // 🔹 Image Loading
     implementation("io.coil-kt:coil-compose:2.7.0")
 
+    // 🔹 Ubicación y Permisos
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.36.0")
+
+    // 🔹 PDF Generation
+    implementation("com.itextpdf:itext7-core:7.1.15")
+
     // 🔹 Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

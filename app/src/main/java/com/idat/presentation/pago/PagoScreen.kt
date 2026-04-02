@@ -76,9 +76,9 @@ fun PagoScreen(
     if (showLoading) {
         LaunchedEffect(Unit) {
             viewModel.procesarPago(
-                onSuccess = {
+                onSuccess = { id ->
                     showLoading = false
-                    navController.navigate("pedidoConfirmado")
+                    navController.navigate("pedidoConfirmado/$id")
                 },
                 onError = { error ->
                     showLoading = false

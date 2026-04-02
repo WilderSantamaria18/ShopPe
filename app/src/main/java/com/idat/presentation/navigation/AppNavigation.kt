@@ -31,6 +31,8 @@ import com.idat.presentation.pago.PagoScreen
 import com.idat.presentation.pago.PedidoConfirmadoScreen
 import com.idat.presentation.pedidos.MisPedidosScreen
 import com.idat.presentation.pedidos.DetallePedidoScreen
+import com.idat.presentation.pedidos.MisComprobantesScreen
+import com.idat.presentation.gestion.AdminComprobantesScreen
 
 
 @Composable
@@ -58,9 +60,27 @@ fun AppNavigation(navController: NavHostController) {
             }
         }
         composable("ayuda/{from}") { AyudaScreen(navController) }
+        composable("admin_comprobantes") {
+            val isAdmin = AdminAccess.isAdminEmail(FirebaseAuth.getInstance().currentUser?.email)
+            if (isAdmin) {
+                AdminComprobantesScreen(navController)
+            } else {
+                AdminOnlyScreen(onBackToCatalog = { navController.navigate("catalogo") })
+            }
+        }
         composable("pago") { PagoScreen(navController) }
-        composable("pedidoConfirmado") { PedidoConfirmadoScreen(navController) }
+        composable(
+            route = "pedidoConfirmado/{pedidoId}",
+            arguments = listOf(navArgument("pedidoId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val pedidoId = backStackEntry.arguments?.getString("pedidoId") ?: ""
+            PedidoConfirmadoScreen(navController, pedidoId)
+        }
         composable("mis_pedidos") { MisPedidosScreen(navController) }
+        composable("mis_comprobantes") { MisComprobantesScreen(navController) }
+        composable("direcciones") { 
+            com.idat.presentation.direcciones.MisDireccionesScreen(navController) 
+        }
         composable(
             route = "detalle_pedido/{pedidoId}",
             arguments = listOf(navArgument("pedidoId") { type = NavType.StringType })

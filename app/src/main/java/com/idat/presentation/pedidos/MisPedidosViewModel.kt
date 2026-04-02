@@ -7,6 +7,7 @@ import com.idat.domain.model.Pedido
 import com.idat.domain.repository.PedidoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,21 +25,36 @@ class MisPedidosViewModel @Inject constructor(
     private val _uiError = MutableStateFlow<String?>(null)
     val uiError: StateFlow<String?> = _uiError.asStateFlow()
 
+    private val _isAdmin = MutableStateFlow(false)
+    val isAdmin: StateFlow<Boolean> = _isAdmin.asStateFlow()
+
     init {
-        auth.currentUser?.uid?.let { userId ->
-            repository.getPedidosByUser(userId)
-                .catch { e -> 
-                    if (e.message?.contains("PERMISSION_DENIED") == true) {
-                        _uiError.value = "Permisos de acceso denegados. Por favor actualiza las reglas en la consola de Firebase."
-                    } else {
-                        _uiError.value = "Error al conectar con la base de datos: ${e.localizedMessage}"
-                    }
-                }
-                .onEach { 
-                    _pedidos.value = it 
-                    _uiError.value = null // Reset error if data loads
-                }
+        val user = auth.currentUser
+        val userEmail = user?.email
+        _isAdmin.value = userEmail == "admin@shoppe.com"
+
+        if (_isAdmin.value) {
+            // Admin: Carga todos los pedidos
+            repository.getAllPedidos()
+                .catch { handleException(it) }
+                .onEach { _pedidos.value = it }
                 .launchIn(viewModelScope)
+        } else {
+            // Cliente: Carga solo sus pedidos
+            user?.uid?.let { userId ->
+                repository.getPedidosByUser(userId)
+                    .catch { handleException(it) }
+                    .onEach { _pedidos.value = it }
+                    .launchIn(viewModelScope)
+            }
+        }
+    }
+
+    private fun handleException(e: Throwable) {
+        if (e.message?.contains("PERMISSION_DENIED") == true) {
+            _uiError.value = "Permisos de acceso denegados. Administrador requerido o reglas de Firebase desactualizadas."
+        } else {
+            _uiError.value = "Error: ${e.localizedMessage}"
         }
     }
 
@@ -54,4 +70,13 @@ class MisPedidosViewModel @Inject constructor(
     val totalGastoMes = pedidos.map { list ->
         list.sumOf { it.total }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+
+    fun actualizarEstadoPedido(pedidoId: String, nuevoEstado: String) {
+        viewModelScope.launch {
+            val result = repository.updatePedidoStatus(pedidoId, nuevoEstado)
+            if (result.isFailure) {
+                _uiError.value = "No se pudo actualizar el estado: ${result.exceptionOrNull()?.message}"
+            }
+        }
+    }
 }

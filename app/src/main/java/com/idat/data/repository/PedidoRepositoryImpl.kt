@@ -35,4 +35,43 @@ class PedidoRepositoryImpl @Inject constructor(
             }
         awaitClose { subscription.remove() }
     }
+
+    override fun getAllPedidos(): Flow<List<Pedido>> = callbackFlow {
+        val subscription = firestore.collection("pedidos")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val pedidos = snapshot.toObjects(Pedido::class.java)
+                    trySend(pedidos)
+                }
+            }
+        awaitClose { subscription.remove() }
+    }
+
+    override fun getPedidoById(pedidoId: String): Flow<Pedido?> = callbackFlow {
+        val subscription = firestore.collection("pedidos").document(pedidoId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val pedido = snapshot.toObject(Pedido::class.java)
+                    trySend(pedido)
+                }
+            }
+        awaitClose { subscription.remove() }
+    }
+
+    override suspend fun updatePedidoStatus(pedidoId: String, newStatus: String): Result<Unit> = try {
+        firestore.collection("pedidos").document(pedidoId)
+            .update("estado", newStatus)
+            .await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 }

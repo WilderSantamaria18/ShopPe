@@ -31,7 +31,7 @@ class PagoViewModel @Inject constructor(
         items.sumOf { it.precio * it.cantidad }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
-    fun procesarPago(onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun procesarPago(onSuccess: (String) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             val items = cartItems.value
             if (items.isEmpty()) {
@@ -39,19 +39,29 @@ class PagoViewModel @Inject constructor(
                 return@launch
             }
 
-            val userId = auth.currentUser?.uid ?: ""
+            val user = auth.currentUser
+            val userId = user?.uid ?: ""
+            val customerEmail = user?.email ?: "anonimo@shoppe.com"
+            val customerName = user?.displayName ?: customerEmail.substringBefore("@")
+            
+            val randomNum = (100000..999999).random()
+            val invoiceNum = "B001-$randomNum"
+
             val pedido = Pedido(
                 id = "SP-${UUID.randomUUID().toString().take(6).uppercase()}",
+                numComprobante = invoiceNum,
                 total = totalAmount.value,
                 estado = "Pendiente",
                 items = items,
-                userId = userId
+                userId = userId,
+                clienteEmail = customerEmail,
+                clienteNombre = customerName
             )
 
             val resultSave = pedidoRepository.savePedido(pedido)
             if (resultSave.isSuccess) {
                 productoRepository.vaciarCarrito()
-                onSuccess()
+                onSuccess(pedido.id)
             } else {
                 onError("Error al guardar el pedido: ${resultSave.exceptionOrNull()?.message}")
             }

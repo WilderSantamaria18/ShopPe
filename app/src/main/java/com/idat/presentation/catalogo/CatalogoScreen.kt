@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.idat.presentation.ui.home.ShopPeHomeScreen
+import kotlinx.coroutines.launch
 
 @Composable
 fun CatalogoScreen(
@@ -23,32 +24,50 @@ fun CatalogoScreen(
     val viewMode by viewModel.viewMode.collectAsState()
     
     var mostrarDialogoCerrarSesion by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         viewModel.cargarProductos()
     }
 
-    ShopPeHomeScreen(
-        isLoading = productos.isEmpty() && textoBusqueda.isEmpty(),
-        viewMode = viewMode,
-        products = productos,
-        categorias = categorias,
-        categoriaSeleccionada = categoriaSeleccionada,
-        textoBusqueda = textoBusqueda,
-        onSearchTextChanged = { viewModel.actualizarBusqueda(it) },
-        onCategorySelected = { viewModel.seleccionarCategoria(it) },
-        onProductClick = { producto -> navController.navigate("detalle/${producto.id}") },
-        onProductFavorite = { producto -> viewModel.toggleFavorito(producto) },
-        isProductFavorite = { id -> viewModel.esFavorito(id) },
-        onNavigateToFavoritos = { navController.navigate("favoritos/fromDrawer") },
-        onNavigateToPersonalizacion = { navController.navigate("personalizacion/fromDrawer") },
-        onNavigateToConfiguracion = { navController.navigate("configuracion/fromDrawer") },
-        onNavigateToGestion = { navController.navigate("gestion/fromDrawer") },
-        onNavigateToAyuda = { navController.navigate("ayuda/fromDrawer") },
-        onNavigateToCarrito = { navController.navigate("carrito") },
-        onNavigateToPedidos = { navController.navigate("mis_pedidos") },
-        onCerrarSesion = { mostrarDialogoCerrarSesion = true }
-    )
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues)) {
+            ShopPeHomeScreen(
+                isLoading = productos.isEmpty() && textoBusqueda.isEmpty(),
+                viewMode = viewMode,
+                products = productos,
+                categorias = categorias,
+                categoriaSeleccionada = categoriaSeleccionada,
+                textoBusqueda = textoBusqueda,
+                onSearchTextChanged = { viewModel.actualizarBusqueda(it) },
+                onCategorySelected = { viewModel.seleccionarCategoria(it) },
+                onProductClick = { producto -> navController.navigate("detalle/${producto.id}") },
+                onProductFavorite = { producto -> viewModel.toggleFavorito(producto) },
+                onAddToCart = { producto ->
+                    viewModel.agregarAlCarrito(producto)
+                    scope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = "${producto.nombre} añadido al carrito",
+                            duration = SnackbarDuration.Short
+                        )
+                    }
+                },
+                isProductFavorite = { id -> viewModel.esFavorito(id) },
+                onNavigateToFavoritos = { navController.navigate("favoritos/fromDrawer") },
+                onNavigateToPersonalizacion = { navController.navigate("personalizacion/fromDrawer") },
+                onNavigateToConfiguracion = { navController.navigate("configuracion/fromDrawer") },
+                onNavigateToGestion = { navController.navigate("gestion/fromDrawer") },
+                onNavigateToAyuda = { navController.navigate("ayuda/fromDrawer") },
+                onNavigateToCarrito = { navController.navigate("carrito") },
+                onNavigateToPedidos = { navController.navigate("mis_pedidos") },
+                onNavigateToDirecciones = { navController.navigate("direcciones") },
+                onCerrarSesion = { mostrarDialogoCerrarSesion = true }
+            )
+        }
+    }
 
     if (mostrarDialogoCerrarSesion) {
         DialogoConfirmacionCerrarSesion(

@@ -145,6 +145,7 @@ fun CarritoScreen(
                     onNavigateToAyuda = { navController.navigate("ayuda/fromCart") },
                     onNavigateToConfiguracion = { navController.navigate("configuracion/fromCart") },
                     onNavigateToPersonalizacion = { navController.navigate("personalizacion/fromCart") },
+                    onNavigateToDirecciones = { navController.navigate("direcciones") },
                     onCerrarSesion = { 
                         navController.navigate("login") {
                             popUpTo(0) { inclusive = true }

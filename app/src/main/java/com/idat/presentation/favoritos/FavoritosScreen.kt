@@ -89,6 +89,7 @@ fun FavoritosScreen(
                 onNavigateToAyuda = { navController.navigate("ayuda/fromFav") },
                 onNavigateToConfiguracion = { navController.navigate("configuracion/fromFav") },
                 onNavigateToPersonalizacion = { navController.navigate("personalizacion/fromFav") },
+                onNavigateToDirecciones = { navController.navigate("direcciones") },
                 onCerrarSesion = { 
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }

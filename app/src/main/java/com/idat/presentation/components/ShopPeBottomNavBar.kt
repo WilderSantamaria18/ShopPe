@@ -36,6 +36,7 @@ fun ShopPeBottomNavBar(
     onNavigateToAyuda: () -> Unit = {},
     onNavigateToConfiguracion: () -> Unit = {},
     onNavigateToPersonalizacion: () -> Unit = {},
+    onNavigateToDirecciones: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
 ) {
     val pinkPrimary = Color(0xFFAB005A)
@@ -58,28 +59,26 @@ fun ShopPeBottomNavBar(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround,
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             NavItem(
+                modifier = Modifier.weight(1f),
                 icon = Icons.Default.Explore,
                 label = "Descubrir",
                 isActive = currentSelection == "Explore",
                 onClick = { onTabSelected("Explore"); onNavigateToCatalogo() }
             )
+
             NavItem(
-                icon = Icons.Default.Search,
-                label = "Buscar",
-                isActive = currentSelection == "Search",
-                onClick = { onTabSelected("Search"); onNavigateToCatalogo() } // Placeholder: opens catalog
-            )
-            NavItem(
+                modifier = Modifier.weight(1f),
                 icon = if (currentSelection == "Favoritos") Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                 label = "Mis Favoritos",
                 isActive = currentSelection == "Favoritos",
                 onClick = { onTabSelected("Favoritos"); onNavigateToFavoritos() }
             )
             NavItem(
+                modifier = Modifier.weight(1f),
                 icon = Icons.Default.ShoppingBag,
                 label = "Bolsa",
                 isActive = currentSelection == "Bag",
@@ -88,7 +87,7 @@ fun ShopPeBottomNavBar(
             
             // Profile context with a simple long press for logout or just a button to Gestion/Profile
             var showProfileMenu by remember { mutableStateOf(false) }
-            Box {
+            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                 NavItem(
                     icon = Icons.Default.Person,
                     label = "Perfil",
@@ -110,6 +109,11 @@ fun ShopPeBottomNavBar(
                         text = { Text("Personalización", color = MaterialTheme.colorScheme.onSurface) },
                         onClick = { showProfileMenu = false; onNavigateToPersonalizacion() },
                         leadingIcon = { Icon(Icons.Default.AutoFixHigh, contentDescription = null, tint = pinkPrimary) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Mis Direcciones", color = MaterialTheme.colorScheme.onSurface) },
+                        onClick = { showProfileMenu = false; onNavigateToDirecciones() },
+                        leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null, tint = pinkPrimary) }
                     )
                     DropdownMenuItem(
                         text = { Text("Configuración", color = MaterialTheme.colorScheme.onSurface) },
@@ -142,6 +146,7 @@ fun ShopPeBottomNavBar(
 
 @Composable
 fun NavItem(
+    modifier: Modifier = Modifier,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     isActive: Boolean,
@@ -153,11 +158,11 @@ fun NavItem(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(20.dp))
             .background(if (isActive) Color(0xFFFFE8ED) else Color.Transparent)
             .clickable { onClick() }
-            .padding(horizontal = 14.dp, vertical = 10.dp)
+            .padding(horizontal = 4.dp, vertical = 10.dp)
     ) {
         Icon(
             imageVector = icon,

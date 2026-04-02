@@ -34,4 +34,12 @@ object RepositoryModule {
     ): PedidoRepository {
         return PedidoRepositoryImpl(firestore)
     }
+
+    @Provides
+    @Singleton
+    fun provideDireccionRepository(
+        firestore: FirebaseFirestore
+    ): com.idat.domain.repository.DireccionRepository {
+        return com.idat.data.repository.DireccionRepositoryImpl(firestore)
+    }
 }

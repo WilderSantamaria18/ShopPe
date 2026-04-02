@@ -44,6 +44,7 @@ fun ShopPeHomeScreen(
     onCategorySelected: (String) -> Unit = {},
     onProductClick: (Producto) -> Unit = {},
     onProductFavorite: (Producto) -> Unit = {},
+    onAddToCart: (Producto) -> Unit = {},
     isProductFavorite: suspend (Int) -> Boolean = { false },
     // Navbar Actions
     onNavigateToFavoritos: () -> Unit = {},
@@ -53,6 +54,7 @@ fun ShopPeHomeScreen(
     onNavigateToPedidos: () -> Unit = {},
     onNavigateToConfiguracion: () -> Unit = {},
     onNavigateToPersonalizacion: () -> Unit = {},
+    onNavigateToDirecciones: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
 ) {
     val isDark = MaterialTheme.colorScheme.surface == Color(0xFF140C0E)
@@ -105,6 +107,7 @@ fun ShopPeHomeScreen(
                     onNavigateToAyuda = onNavigateToAyuda,
                     onNavigateToConfiguracion = onNavigateToConfiguracion,
                     onNavigateToPersonalizacion = onNavigateToPersonalizacion,
+                    onNavigateToDirecciones = onNavigateToDirecciones,
                     onCerrarSesion = onCerrarSesion
                 )
             }
@@ -191,6 +194,7 @@ fun ShopPeHomeScreen(
                                     isFav = !isFav
                                 },
                                 onClick = { onProductClick(producto) },
+                                onAddToCart = { onAddToCart(producto) },
                                 showTag = showTag,
                                 tagText = tagText
                             )
@@ -217,6 +221,7 @@ fun ShopPeHomeScreen(
                                     isFav = !isFav
                                 },
                                 onClick = { onProductClick(producto) },
+                                onAddToCart = { onAddToCart(producto) },
                                 showTag = showTag,
                                 tagText = tagText
                             )

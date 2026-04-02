@@ -30,6 +30,10 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.idat.domain.model.Pedido
 import com.idat.presentation.components.ShopPeBottomNavBar
+import com.idat.presentation.pago.PedidoConfirmadoViewModel
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -38,12 +42,16 @@ import java.util.*
 @Composable
 fun MisPedidosScreen(
     navController: NavHostController,
-    viewModel: MisPedidosViewModel = hiltViewModel()
+    viewModel: MisPedidosViewModel = hiltViewModel(),
+    pdfViewModel: PedidoConfirmadoViewModel = hiltViewModel()
 ) {
     val filteredPedidos by viewModel.filteredPedidos.collectAsState(emptyList())
     val selectedFilter by viewModel.selectedFilter.collectAsState()
     val totalMes by viewModel.totalGastoMes.collectAsState(0.0)
     val uiError by viewModel.uiError.collectAsState()
+    val isAdmin by viewModel.isAdmin.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     val pinkPrimary = Color(0xFFAB005A)
     val pinkContainer = Color(0xFFD80073)
@@ -55,7 +63,7 @@ fun MisPedidosScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        "Mis Pedidos", 
+                        if (isAdmin) "Gestión de Pedidos (ADMIN)" else "Mis Pedidos", 
                         fontWeight = FontWeight.ExtraBold, 
                         fontSize = 22.sp, 
                         letterSpacing = (-0.5).sp,
@@ -75,6 +83,7 @@ fun MisPedidosScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = surfaceColor.copy(alpha = 0.8f))
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             ShopPeBottomNavBar(
                 currentSelection = "Perfil",
@@ -85,6 +94,7 @@ fun MisPedidosScreen(
                 onNavigateToAyuda = { navController.navigate("ayuda/fromOrders") },
                 onNavigateToConfiguracion = { navController.navigate("configuracion/fromOrders") },
                 onNavigateToPersonalizacion = { navController.navigate("personalizacion/fromOrders") },
+                onNavigateToDirecciones = { navController.navigate("direcciones") },
                 onCerrarSesion = {
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
@@ -153,7 +163,17 @@ fun MisPedidosScreen(
                 }
             } else {
                 items(filteredPedidos) { pedido ->
-                    OrderCard(pedido, navController)
+                    OrderCard(
+                        pedido = pedido, 
+                        navController = navController,
+                        isAdmin = isAdmin,
+                        pdfViewModel = pdfViewModel,
+                        snackbarHostState = snackbarHostState,
+                        scope = scope,
+                        onUpdateStatus = { status ->
+                            viewModel.actualizarEstadoPedido(pedido.id, status)
+                        }
+                    )
                 }
             }
 
@@ -166,7 +186,15 @@ fun MisPedidosScreen(
 }
 
 @Composable
-fun OrderCard(pedido: Pedido, navController: NavHostController) {
+fun OrderCard(
+    pedido: Pedido,
+    navController: NavHostController,
+    isAdmin: Boolean = false,
+    pdfViewModel: PedidoConfirmadoViewModel,
+    snackbarHostState: SnackbarHostState,
+    scope: CoroutineScope,
+    onUpdateStatus: (String) -> Unit = {}
+) {
     val pinkPrimary = Color(0xFFAB005A)
     val pinkContainer = Color(0xFFD80073)
     val onSurfaceVariant = Color(0xFF5A3F47)
@@ -300,12 +328,86 @@ fun OrderCard(pedido: Pedido, navController: NavHostController) {
                     }
                 }
                 
-                IconButton(
-                    onClick = { /* More options */ },
-                    modifier = Modifier.size(52.dp).clip(RoundedCornerShape(18.dp)).background(Color(0xFFFFF0F2))
-                ) {
-                    Icon(Icons.Default.MoreHoriz, contentDescription = "Más", tint = Color(0xFF455F88))
+                var showMenu by remember { mutableStateOf(false) }
+                val context = LocalContext.current
+                
+                Box {
+                    IconButton(
+                        onClick = { showMenu = true },
+                        modifier = Modifier.size(52.dp).clip(RoundedCornerShape(18.dp)).background(Color(0xFFFFF0F2))
+                    ) {
+                        Icon(Icons.Default.MoreHoriz, contentDescription = "Más", tint = Color(0xFF455F88))
+                    }
+                    
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false },
+                        modifier = Modifier.background(Color.White)
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Descargar Factura PDF") },
+                            leadingIcon = { Icon(Icons.Default.PictureAsPdf, contentDescription = null, tint = pinkPrimary) },
+                            onClick = {
+                                showMenu = false
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Descargando factura #${pedido.id.takeLast(6).uppercase()}...")
+                                }
+                                pdfViewModel.cargarPedido(pedido.id)
+                                pdfViewModel.generarPdf(
+                                    context,
+                                    onComplete = { 
+                                        pdfViewModel.abrirComprobante(context, pedido.id)
+                                    },
+                                    onError = { /* handle error */ }
+                                )
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Ver Detalles") },
+                            leadingIcon = { Icon(Icons.Default.Visibility, contentDescription = null, tint = Color.Gray) },
+                            onClick = {
+                                showMenu = false
+                                navController.navigate("detalle_pedido/${pedido.id}")
+                            }
+                        )
+                    }
                 }
+            }
+
+            // Admin buttons
+            if (isAdmin && pedido.estado.lowercase() == "pendiente") {
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = { onUpdateStatus("Procesando") },
+                        modifier = Modifier.weight(1f).height(48.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE6F4EA))
+                    ) {
+                        Text("Aprobar", color = Color(0xFF1E8E3E), fontWeight = FontWeight.Bold)
+                    }
+                    Button(
+                        onClick = { onUpdateStatus("Cancelado") },
+                        modifier = Modifier.weight(1f).height(48.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFEAEA))
+                    ) {
+                        Text("Rechazar", color = Color(0xFFD93025), fontWeight = FontWeight.Bold)
+                    }
+                }
+            } else if (isAdmin) {
+                // Show user ID for admin reference
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "ID Usuario: ${pedido.userId}",
+                    fontSize = 11.sp,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }
