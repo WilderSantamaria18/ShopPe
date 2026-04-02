@@ -21,7 +21,15 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+    fun provideFirebaseFirestore(): FirebaseFirestore {
+        val firestore = FirebaseFirestore.getInstance()
+        val settings = com.google.firebase.firestore.FirebaseFirestoreSettings.Builder()
+            .setPersistenceEnabled(true)
+            .setCacheSizeBytes(com.google.firebase.firestore.FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED)
+            .build()
+        firestore.firestoreSettings = settings
+        return firestore
+    }
 
     @Provides
     @Singleton

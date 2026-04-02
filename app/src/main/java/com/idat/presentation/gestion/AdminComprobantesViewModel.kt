@@ -20,6 +20,15 @@ class AdminComprobantesViewModel @Inject constructor(
     val statusFilter = _statusFilter.asStateFlow()
 
     private val _allPedidos = repository.getAllPedidos()
+        .retryWhen { cause, attempt ->
+            if (cause is java.io.IOException || cause.message?.contains("UNAVAILABLE") == true) {
+                val delayTime = (attempt + 1) * 2000L
+                kotlinx.coroutines.delay(minOf(delayTime, 30000L))
+                true
+            } else {
+                false
+            }
+        }
         .map { pedidos -> pedidos.sortedByDescending { it.fecha } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

@@ -55,7 +55,7 @@ class PedidoConfirmadoViewModel @Inject constructor(
         viewModelScope.launch {
             _isGeneratingPdf.value = true
             try {
-                val fileName = "Factura_ShopPe_${currentPedido.id}.pdf"
+                val fileName = "Boleta_ShopPe_${currentPedido.id}.pdf"
                 
                 withContext(Dispatchers.IO) {
                     val outputStream: OutputStream?
@@ -94,10 +94,10 @@ class PedidoConfirmadoViewModel @Inject constructor(
                         leftCell.add(Paragraph("Condición IVA: Responsable Inscripto"))
                         headerTable.addCell(leftCell)
                         
-                        // Right Column (Factura Info)
+                        // Right Column (Boleta Info)
                         val rightCell = Cell().setBorder(com.itextpdf.layout.borders.Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT)
-                        rightCell.add(Paragraph("FACTURA").setBold().setFontSize(22f))
-                        rightCell.add(Paragraph("Pto. Venta: 0001  Nro. Comp: ${currentPedido.numComprobante.ifEmpty { "B001-" + currentPedido.id.takeLast(6).uppercase() }}"))
+                        rightCell.add(Paragraph("BOLETA DE VENTA").setBold().setFontSize(22f))
+                        rightCell.add(Paragraph("Serie: B001  Nro. Comp: ${currentPedido.numComprobante.ifEmpty { currentPedido.id.takeLast(8).uppercase() }}"))
                         val dateStr = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(currentPedido.fecha))
                         rightCell.add(Paragraph("Fecha de Emisión: $dateStr"))
                         rightCell.add(Paragraph("CUIT: 30-12345678-9"))
@@ -157,7 +157,7 @@ class PedidoConfirmadoViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    onError("Error al generar factura: ${e.localizedMessage}")
+                    onError("Error al generar boleta: ${e.localizedMessage}")
                 }
             } finally {
                 _isGeneratingPdf.value = false
@@ -166,24 +166,36 @@ class PedidoConfirmadoViewModel @Inject constructor(
     }
 
     fun abrirComprobante(context: Context, pedidoId: String) {
-        val fileName = "Factura_ShopPe_$pedidoId.pdf"
-        val file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName)
+        val fileName = "Boleta_ShopPe_$pedidoId.pdf"
         
-        // Check in public Downloads if not in Private
+        // Determinar qué archivo existe
         val publicFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fileName)
+        val privateFile = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName)
         
-        val targetFile = if (file.exists()) file else if (publicFile.exists()) publicFile else null
-        
-        if (targetFile != null && targetFile.exists()) {
-            val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", targetFile)
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, "application/pdf")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val targetFile = when {
+            publicFile.exists() -> publicFile
+            privateFile.exists() -> privateFile
+            else -> null
+        }
+
+        if (targetFile != null) {
+            try {
+                val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", targetFile)
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(uri, "application/pdf")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(Intent.createChooser(intent, "Abrir Boleta con..."))
+            } catch (e: SecurityException) {
+                android.widget.Toast.makeText(context, "Error de seguridad: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+            } catch (e: android.content.ActivityNotFoundException) {
+                android.widget.Toast.makeText(context, "No hay una aplicación para abrir PDFs.", android.widget.Toast.LENGTH_LONG).show()
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(context, "Error al abrir: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
             }
-            context.startActivity(Intent.createChooser(intent, "Abrir Factura con..."))
         } else {
-            // If file doesn't exist, we might need to regenerate it or notify user
+            android.widget.Toast.makeText(context, "El archivo ya no existe en el almacenamiento.", android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 }

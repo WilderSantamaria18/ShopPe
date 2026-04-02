@@ -36,6 +36,15 @@ class MisPedidosViewModel @Inject constructor(
         if (_isAdmin.value) {
             // Admin: Carga todos los pedidos
             repository.getAllPedidos()
+                .retryWhen { cause, attempt ->
+                    if (cause is java.io.IOException || cause.message?.contains("UNAVAILABLE") == true) {
+                        val delayTime = (attempt + 1) * 2000L
+                        kotlinx.coroutines.delay(minOf(delayTime, 30000L))
+                        true
+                    } else {
+                        false
+                    }
+                }
                 .catch { handleException(it) }
                 .onEach { _pedidos.value = it }
                 .launchIn(viewModelScope)
@@ -43,6 +52,15 @@ class MisPedidosViewModel @Inject constructor(
             // Cliente: Carga solo sus pedidos
             user?.uid?.let { userId ->
                 repository.getPedidosByUser(userId)
+                    .retryWhen { cause, attempt ->
+                        if (cause is java.io.IOException || cause.message?.contains("UNAVAILABLE") == true) {
+                            val delayTime = (attempt + 1) * 2000L
+                            kotlinx.coroutines.delay(minOf(delayTime, 30000L))
+                            true
+                        } else {
+                            false
+                        }
+                    }
                     .catch { handleException(it) }
                     .onEach { _pedidos.value = it }
                     .launchIn(viewModelScope)

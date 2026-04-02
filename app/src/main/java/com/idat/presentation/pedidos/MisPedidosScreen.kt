@@ -345,12 +345,19 @@ fun OrderCard(
                         modifier = Modifier.background(Color.White)
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Descargar Factura PDF") },
+                            text = { Text("Descargar Boleta PDF") },
                             leadingIcon = { Icon(Icons.Default.PictureAsPdf, contentDescription = null, tint = pinkPrimary) },
                             onClick = {
                                 showMenu = false
                                 scope.launch {
-                                    snackbarHostState.showSnackbar("Descargando factura #${pedido.id.takeLast(6).uppercase()}...")
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = "Boleta #${pedido.id.takeLast(8).uppercase()} lista",
+                                        actionLabel = "ABRIR",
+                                        duration = SnackbarDuration.Long
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        pdfViewModel.abrirComprobante(context, pedido.id)
+                                    }
                                 }
                                 pdfViewModel.cargarPedido(pedido.id)
                                 pdfViewModel.generarPdf(
@@ -360,14 +367,6 @@ fun OrderCard(
                                     },
                                     onError = { /* handle error */ }
                                 )
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Ver Detalles") },
-                            leadingIcon = { Icon(Icons.Default.Visibility, contentDescription = null, tint = Color.Gray) },
-                            onClick = {
-                                showMenu = false
-                                navController.navigate("detalle_pedido/${pedido.id}")
                             }
                         )
                     }

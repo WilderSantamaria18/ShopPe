@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.idat.presentation.pago.PedidoConfirmadoViewModel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -94,8 +95,16 @@ fun MisComprobantesScreen(
                                 )
                             }
                             IconButton(onClick = {
-                                // First generate PDF if it doesn't exist, then open.
-                                // Repurposing PedidoConfirmadoViewModel logic
+                                scope.launch {
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = "Boleta preparada",
+                                        actionLabel = "ABRIR",
+                                        duration = SnackbarDuration.Long
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        pdfViewModel.abrirComprobante(context, pedido.id)
+                                    }
+                                }
                                 pdfViewModel.cargarPedido(pedido.id)
                                 pdfViewModel.generarPdf(
                                     context,
@@ -105,7 +114,7 @@ fun MisComprobantesScreen(
                                     onError = { /* error handling */ }
                                 )
                             }) {
-                                Icon(Icons.Default.PictureAsPdf, contentDescription = "Ver PDF", tint = Color.DarkGray)
+                                Icon(Icons.Default.PictureAsPdf, contentDescription = "Ver Boleta", tint = Color.DarkGray)
                             }
                         }
                     }

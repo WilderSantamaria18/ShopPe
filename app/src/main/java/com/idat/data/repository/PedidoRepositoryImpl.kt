@@ -25,7 +25,7 @@ class PedidoRepositoryImpl @Inject constructor(
             .whereEqualTo("userId", userId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    // Solo retornar, permitiendo que el SDK de Firestore maneje reintentos internamente
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
@@ -40,7 +40,7 @@ class PedidoRepositoryImpl @Inject constructor(
         val subscription = firestore.collection("pedidos")
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    // Solo retornar, permitiendo que el SDK de Firestore maneje reintentos internamente
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
@@ -55,7 +55,7 @@ class PedidoRepositoryImpl @Inject constructor(
         val subscription = firestore.collection("pedidos").document(pedidoId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    // Solo retornar, permitiendo que el SDK de Firestore maneje reintentos internamente
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {

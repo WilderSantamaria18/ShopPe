@@ -41,7 +41,7 @@ fun AdminComprobantesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Panel Comprobantes (Admin)", fontWeight = FontWeight.Bold) },
+                title = { Text("Panel Boletas (Admin)", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
@@ -64,7 +64,7 @@ fun AdminComprobantesScreen(
                 value = searchQuery,
                 onValueChange = { adminViewModel.onSearchQueryChange(it) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Buscar por cliente o factura...") },
+                placeholder = { Text("Buscar por cliente o boleta...") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 shape = RoundedCornerShape(12.dp)
             )
@@ -113,7 +113,7 @@ fun AdminComprobantesScreen(
                                 ) {
                                     Column {
                                         Text(
-                                            text = pedido.numComprobante.ifEmpty { "Factura Pendiente" },
+                                            text = pedido.numComprobante.ifEmpty { "Boleta Pendiente" },
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 16.sp
                                         )
@@ -130,7 +130,14 @@ fun AdminComprobantesScreen(
                                     }
                                     IconButton(onClick = {
                                         scope.launch {
-                                            snackbarHostState.showSnackbar("Generando comprobante para ${pedido.clienteNombre}...")
+                                            val result = snackbarHostState.showSnackbar(
+                                                message = "Boleta para ${pedido.clienteNombre} lista",
+                                                actionLabel = "ABRIR",
+                                                duration = SnackbarDuration.Long
+                                            )
+                                            if (result == SnackbarResult.ActionPerformed) {
+                                                pdfViewModel.abrirComprobante(context, pedido.id)
+                                            }
                                         }
                                         pdfViewModel.cargarPedido(pedido.id)
                                         pdfViewModel.generarPdf(
@@ -143,7 +150,7 @@ fun AdminComprobantesScreen(
                                             }
                                         )
                                     }) {
-                                        Icon(Icons.Default.PictureAsPdf, contentDescription = "Ver Factura", tint = Color(0xFFAB005A))
+                                        Icon(Icons.Default.PictureAsPdf, contentDescription = "Ver Boleta", tint = Color(0xFFAB005A))
                                     }
                                 }
                                 

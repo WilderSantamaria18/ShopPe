@@ -2,11 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
  
-+    <!-- Añadido para corrección de SecurityException en GMS -->
-+    <queries>
-+        <package android:name="com.google.android.gms" />
-+    </queries>
-+
+    <!-- Añadido para corrección de SecurityException en GMS -->
+    <queries>
+        <package android:name="com.google.android.gms" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="application/pdf" />
+        </intent>
+    </queries>
+
     <!-- ✅ AÑADE ESTAS LÍNEAS -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

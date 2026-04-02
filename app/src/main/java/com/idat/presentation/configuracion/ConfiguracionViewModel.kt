@@ -30,7 +30,15 @@ class ConfiguracionViewModel @Inject constructor(
     val isDarkTheme: StateFlow<Boolean> = _isDarkTheme
 
     init {
+        // Initial value
         _email.value = auth.currentUser?.email ?: ""
+        
+        // Listener to ensure it updates when the user signs in or profile loads
+        auth.addAuthStateListener { firebaseAuth ->
+            val user = firebaseAuth.currentUser
+            _email.value = user?.email ?: ""
+        }
+
         viewModelScope.launch {
             preferencesManager.isDarkTheme.collect { isDark ->
                 _isDarkTheme.value = isDark
