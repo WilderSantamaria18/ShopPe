@@ -1,6 +1,8 @@
 *.iml
 .gradle
 /local.properties
+local.properties
+/.idea/
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
@@ -12,4 +14,9 @@
 /captures
 .externalNativeBuild
 .cxx
-local.properties
+*.apk
+*.aar
+
+# Firebase and Google Services
+google-services.json
+google-services-desktop.json
