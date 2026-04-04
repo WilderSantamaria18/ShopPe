@@ -409,7 +409,7 @@ fun OrderCard(
 
                 IconButton(
                     onClick = {
-                        val phoneNumber = "+51999999999" // Número de soporte
+                        val phoneNumber = "+51947837554" // Número de Yeferson
                         val message = "Hola ShopPe, necesito ayuda con mi pedido #SP-${pedido.id.takeLast(6).uppercase()}. 🛍️"
                         try {
                             val url = "https://api.whatsapp.com/send?phone=$phoneNumber&text=${java.net.URLEncoder.encode(message, "UTF-8")}"
