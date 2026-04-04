@@ -104,6 +104,10 @@ dependencies {
 
     // 🔹 PDF Generation
     implementation("com.itextpdf:itext7-core:7.1.15")
+    implementation("org.slf4j:slf4j-nop:1.7.30")
+    
+    // 🔹 QR Code Generation
+    implementation("com.google.zxing:core:3.5.3")
 
     // 🔹 Testing
     testImplementation(libs.junit)

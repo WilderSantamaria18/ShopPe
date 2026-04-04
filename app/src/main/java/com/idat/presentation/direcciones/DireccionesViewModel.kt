@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.idat.domain.model.Direccion
+import com.idat.domain.model.Tarjeta
 import com.idat.domain.repository.DireccionRepository
+import com.idat.domain.repository.TarjetaRepository
 import android.content.Context
 import android.location.Geocoder
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -24,6 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DireccionesViewModel @Inject constructor(
     private val repository: DireccionRepository,
+    private val tarjetaRepository: TarjetaRepository,
     private val auth: FirebaseAuth,
     private val fusedLocationClient: FusedLocationProviderClient,
     @ApplicationContext private val context: Context
@@ -33,6 +36,9 @@ class DireccionesViewModel @Inject constructor(
         get() = auth.currentUser?.uid ?: ""
 
     val direcciones: StateFlow<List<Direccion>> = repository.getDirecciones(userId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val tarjetas: StateFlow<List<Tarjeta>> = tarjetaRepository.getTarjetas(userId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _isLoading = MutableStateFlow(false)
@@ -62,6 +68,17 @@ class DireccionesViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             val result = repository.deleteDireccion(userId, direccionId)
+            if (result.isFailure) {
+                _error.value = result.exceptionOrNull()?.message
+            }
+            _isLoading.value = false
+        }
+    }
+
+    fun deleteTarjeta(tarjetaId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val result = tarjetaRepository.deleteTarjeta(userId, tarjetaId)
             if (result.isFailure) {
                 _error.value = result.exceptionOrNull()?.message
             }

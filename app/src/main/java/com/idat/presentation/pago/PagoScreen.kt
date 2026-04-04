@@ -56,15 +56,17 @@ fun PagoScreen(
     
     var showLoading by remember { mutableStateOf(false) }
 
+    val selectedDireccion by viewModel.selectedDireccion.collectAsState()
+    
     // Validation
-    val isFormValid = if (selectedMethod == "card") {
+    val isFormValid = (if (selectedMethod == "card") {
         cardNumber.filter { it.isDigit() }.length >= 16 && 
         expiryDate.length >= 5 && 
         cvv.length >= 3 && 
         cardHolderName.isNotBlank()
     } else {
         true // Yape is always "valid" as it's just showing a QR
-    }
+    }) && !selectedDireccion.isNullOrBlank()
 
     val isDark = MaterialTheme.colorScheme.surface == Color(0xFF140C0E)
     val surfaceContainerLow = if (isDark) Color(0xFF1F1215) else Color(0xFFFFF0F2)
@@ -76,6 +78,9 @@ fun PagoScreen(
     if (showLoading) {
         LaunchedEffect(Unit) {
             viewModel.procesarPago(
+                cardNumber = if (selectedMethod == "card") cardNumber else null,
+                expiryDate = if (selectedMethod == "card") expiryDate else null,
+                cardHolderName = if (selectedMethod == "card") cardHolderName else null,
                 onSuccess = { id ->
                     showLoading = false
                     navController.navigate("pedidoConfirmado/$id")
@@ -120,6 +125,70 @@ fun PagoScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 24.dp)
             ) {
+                // Shipping Address Section
+                val direcciones by viewModel.direcciones?.collectAsState(initial = emptyList()) ?: remember { mutableStateOf(emptyList()) }
+                val selectedDireccion by viewModel.selectedDireccion.collectAsState()
+
+                Text(
+                    "Dirección de Envío",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
+                if (direcciones.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f))
+                            .border(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.2f), RoundedCornerShape(24.dp))
+                            .clickable { navController.navigate("direcciones") }
+                            .padding(20.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Help, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                "No tienes direcciones registradas. Toca aquí para añadir una.",
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                } else {
+                    direcciones.forEach { dir ->
+                        val isDirSelected = selectedDireccion == dir.direccion
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(if (isDirSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f) else surfaceContainerLowest)
+                                .border(1.dp, if (isDirSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent, RoundedCornerShape(20.dp))
+                                .clickable { viewModel.seleccionarDireccion(dir.direccion) }
+                                .padding(16.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                RadioButton(selected = isDirSelected, onClick = { viewModel.seleccionarDireccion(dir.direccion) })
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(dir.tag, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                    Text(dir.direccion, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                        }
+                    }
+                    
+                    TextButton(
+                        onClick = { navController.navigate("direcciones") },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text("+ Gestionar direcciones")
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Payment Selection

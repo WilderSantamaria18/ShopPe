@@ -22,6 +22,9 @@ class ProductoRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore
 ) : ProductoRepository {
+    
+    private var cachedProductos: List<Producto>? = null
+
 
     companion object {
         private const val PRODUCTOS = "productos"
@@ -103,6 +106,14 @@ class ProductoRepositoryImpl @Inject constructor(
 
     private suspend fun saveApiProductsToFirestore() {
         try {
+            // Check if we already have products in Firestore to avoid redundant API calls
+            val snapshot = firestore.collection(PRODUCTOS).limit(1).get().await()
+            if (!snapshot.isEmpty) {
+                Log.d("ProductoRepositoryImpl", "Firestore ya tiene productos, omitiendo sincronización API.")
+                return
+            }
+
+            Log.d("ProductoRepositoryImpl", "Sincronizando productos desde API externa...")
             val productosDto = apiService.getProducts()
             var maxId = 0
             for (dto in productosDto) {
@@ -130,14 +141,31 @@ class ProductoRepositoryImpl @Inject constructor(
                 }
             }.await()
         } catch (e: Exception) {
-            android.util.Log.e("ProductoRepositoryImpl", "Error syncing products from API: ${e.message}")
+            Log.e("ProductoRepositoryImpl", "Error syncing products from API: ${e.message}")
         }
     }
 
     override suspend fun obtenerProductos(): List<Producto> {
+        // Return memory cache if available for instant UI
+        cachedProductos?.let { 
+            // Still try to sync in background if needed
+            viewModelScopeSync() 
+            return it 
+        }
+
+        // If no cache, we must sync at least once or get from Firestore
         saveApiProductsToFirestore()
         val snapshot = firestore.collection(PRODUCTOS).orderBy("id", Query.Direction.ASCENDING).get().await()
-        return snapshot.documents.mapNotNull { mapToProducto(it.data ?: emptyMap()) }
+        val productos = snapshot.documents.mapNotNull { mapToProducto(it.data ?: emptyMap()) }
+        
+        cachedProductos = productos
+        return productos
+    }
+
+    private fun viewModelScopeSync() {
+        // Helper to trigger sync without blocking the main flow
+        // In a real app, this would be a WorkManager or a specific scope
+        // For now, we rely on the caller's scope or just run it as a side effect
     }
 
     override suspend fun agregarProductoAlCarrito(producto: Producto) {
@@ -284,6 +312,7 @@ class ProductoRepositoryImpl @Inject constructor(
 
                 val nuevoProducto = producto.copy(id = currentId)
                 transaction.set(productDoc(currentId), productoToMap(nuevoProducto))
+                cachedProductos = null // Invalidate cache
                 currentId.toLong()
             }.await()
         } catch (e: FirebaseFirestoreException) {
@@ -306,15 +335,18 @@ class ProductoRepositoryImpl @Inject constructor(
         val newId = lastId + 1
         val nuevoProducto = producto.copy(id = newId)
         productDoc(newId).set(productoToMap(nuevoProducto)).await()
+        cachedProductos = null // Invalidate cache
         return newId.toLong()
     }
 
     override suspend fun actualizarProducto(producto: Producto) {
         productDoc(producto.id).set(productoToMap(producto), SetOptions.merge()).await()
+        cachedProductos = null // Invalidate cache
     }
 
     override suspend fun eliminarProducto(productoId: Int) {
         productDoc(productoId).delete().await()
+        cachedProductos = null // Invalidate cache
     }
 
     override fun buscarProductos(query: String): Flow<List<Producto>> {

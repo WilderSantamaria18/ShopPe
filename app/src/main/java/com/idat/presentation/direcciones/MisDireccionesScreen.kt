@@ -32,6 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.idat.domain.model.Direccion
+import com.idat.domain.model.Tarjeta
 import com.idat.presentation.components.*
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -49,6 +50,8 @@ fun MisDireccionesScreen(
     val error by direccionesViewModel.error.collectAsState()
     val ubicacionActual by direccionesViewModel.ubicacionActual.collectAsState()
     val estaCargandoUbicacion by direccionesViewModel.estaCargandoUbicacion.collectAsState()
+
+    val tarjetas by direccionesViewModel.tarjetas.collectAsState()
 
     val locationPermissionsState = rememberMultiplePermissionsState(
         listOf(
@@ -86,7 +89,7 @@ fun MisDireccionesScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Mis Direcciones",
+                        text = "Mi Perfil de Pago",
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
@@ -114,7 +117,7 @@ fun MisDireccionesScreen(
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.padding(bottom = 16.dp, end = 8.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Añadir dirección", modifier = Modifier.size(28.dp))
+                Icon(Icons.Default.AddLocationAlt, contentDescription = "Añadir dirección", modifier = Modifier.size(28.dp))
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -155,6 +158,32 @@ fun MisDireccionesScreen(
                         pinkContainer = pinkContainer,
                         surfaceContainerLow = surfaceContainerLow
                     )
+                }
+
+                if (tarjetas.isNotEmpty()) {
+                    item {
+                        Column(modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)) {
+                            Text(
+                                text = "Mis Tarjetas",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = pinkPrimary
+                            )
+                            Text(
+                                text = "Métodos de pago guardados de tus compras.",
+                                color = Color.Gray,
+                                fontSize = 13.sp
+                            )
+                        }
+                    }
+
+                    items(tarjetas) { tarjeta ->
+                        TarjetaCard(
+                            tarjeta = tarjeta,
+                            onDelete = { direccionesViewModel.deleteTarjeta(tarjeta.id) },
+                            pinkPrimary = pinkPrimary
+                        )
+                    }
                 }
 
                 item {
@@ -496,6 +525,53 @@ fun TypeChip(label: String, icon: ImageVector, isSelected: Boolean, onClick: () 
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp), tint = if (isSelected) Color.White else Color.Gray)
             Text(label, color = if (isSelected) Color.White else Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+fun TarjetaCard(
+    tarjeta: Tarjeta,
+    onDelete: () -> Unit,
+    pinkPrimary: Color
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(Color.White)
+            .border(1.dp, Color.LightGray.copy(alpha = 0.2f), RoundedCornerShape(24.dp))
+            .padding(20.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(pinkPrimary.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (tarjeta.tipo.lowercase().contains("visa")) Icons.Default.CreditCard else Icons.Default.Payment,
+                        contentDescription = null,
+                        tint = pinkPrimary
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(text = tarjeta.numeroEnmascarado, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(text = tarjeta.titular.uppercase(), fontSize = 12.sp, color = Color.Gray)
+                }
+            }
+            
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Default.DeleteSweep, contentDescription = "Eliminar", tint = Color.Gray.copy(alpha = 0.5f))
+            }
         }
     }
 }

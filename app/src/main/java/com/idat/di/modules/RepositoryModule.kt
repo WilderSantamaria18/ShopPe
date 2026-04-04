@@ -42,4 +42,12 @@ object RepositoryModule {
     ): com.idat.domain.repository.DireccionRepository {
         return com.idat.data.repository.DireccionRepositoryImpl(firestore)
     }
+
+    @Provides
+    @Singleton
+    fun provideTarjetaRepository(
+        firestore: FirebaseFirestore
+    ): com.idat.domain.repository.TarjetaRepository {
+        return com.idat.data.repository.TarjetaRepositoryImpl(firestore)
+    }
 }

@@ -11,5 +11,6 @@ data class Pedido(
     val items: List<ItemCarrito> = emptyList(),
     val userId: String = "",
     val clienteEmail: String = "",
-    val clienteNombre: String = ""
+    val clienteNombre: String = "",
+    val direccion: String = ""
 )

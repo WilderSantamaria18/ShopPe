@@ -1,5 +1,7 @@
 package com.idat.presentation.pago
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,6 +29,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -189,6 +192,34 @@ fun PedidoConfirmadoScreen(
                     )
                 }
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Shipping Address Bento
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(surfaceContainerLow)
+                        .padding(20.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color.White),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.Home, contentDescription = null, tint = pinkPrimary, modifier = Modifier.size(20.dp))
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text("ENTREGA EN", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.Gray, letterSpacing = 1.sp)
+                            Text(currentPedido.direccion.ifEmpty { "Dirección no especificada" }, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // Articles Section
@@ -307,6 +338,28 @@ fun PedidoConfirmadoScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF8DBE2))
                 ) {
                     Text("Volver a la Tienda", color = pinkPrimary, fontWeight = FontWeight.Bold)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // WhatsApp Confirmation Button
+                Button(
+                    onClick = {
+                        val message = "Hola, acabo de realizar un pedido con ID: ${currentPedido.id}. Adjunto mi comprobante para confirmación."
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            data = Uri.parse("https://wa.me/51947837554?text=${Uri.encode(message)}")
+                        }
+                        context.startActivity(intent)
+                    },
+                    modifier = Modifier.fillMaxWidth().height(60.dp),
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366))
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(painter = painterResource(id = android.R.drawable.stat_notify_chat), contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Enviar pedido por WhatsApp", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(100.dp))

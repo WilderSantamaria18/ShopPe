@@ -127,7 +127,14 @@ fun DetallePedidoScreen(
 @Composable
 fun OrderInfoSection(pedido: Pedido) {
     val pinkPrimary = Color(0xFFAB005A)
-    
+    val (statusLabel, statusBg, statusText) = when (pedido.estado.lowercase()) {
+        "entregado" -> Triple("ENTREGADO", Color(0xFFE6F4EA), Color(0xFF1E8E3E))
+        "pendiente" -> Triple("PENDIENTE", Color(0xFFFFF7E0), Color(0xFFF2994A))
+        "procesando" -> Triple("PROCESANDO", Color(0xFFFFF7E0), Color(0xFFF09300))
+        "cancelado" -> Triple("CANCELADO", Color(0xFFFFEAEA), Color(0xFFD93025))
+        else -> Triple("EN CAMINO", Color(0xFFFFE8ED), pinkPrimary)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -156,15 +163,16 @@ fun OrderInfoSection(pedido: Pedido) {
             }
             
             Surface(
-                color = Color(0xFFFFE8ED),
+                color = statusBg,
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    pedido.estado.uppercase(),
+                    statusLabel,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Black,
-                    color = pinkPrimary
+                    color = statusText,
+                    letterSpacing = 0.5.sp
                 )
             }
         }

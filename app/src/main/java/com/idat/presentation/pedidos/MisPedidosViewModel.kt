@@ -9,6 +9,7 @@ import com.idat.domain.repository.PedidoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -87,8 +88,29 @@ class MisPedidosViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val totalGastoMes = pedidos.map { list ->
-        list.sumOf { it.total }
+        val calendar = Calendar.getInstance()
+        val currentMonth = calendar.get(Calendar.MONTH)
+        val currentYear = calendar.get(Calendar.YEAR)
+        
+        list.filter { 
+            val pCal = Calendar.getInstance().apply { timeInMillis = it.fecha }
+            pCal.get(Calendar.MONTH) == currentMonth && pCal.get(Calendar.YEAR) == currentYear
+        }.sumOf { it.total }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+
+    val pedidosEsteAnio = pedidos.map { list ->
+        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+        list.count { 
+            val pCal = Calendar.getInstance().apply { timeInMillis = it.fecha }
+            pCal.get(Calendar.YEAR) == currentYear
+        }.toString()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "0")
+
+    val puntosShoppe = pedidos.map { list ->
+        val totalHistorico = list.sumOf { it.total }
+        // 10 puntos por cada 1 unidad de moneda
+        String.format("%,d", (totalHistorico * 10).toInt())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "0")
 
     fun actualizarEstadoPedido(pedidoId: String, nuevoEstado: String) {
         viewModelScope.launch {

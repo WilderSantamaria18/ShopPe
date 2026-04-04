@@ -22,6 +22,28 @@ class CatalogoViewModel @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
     private val userPreferencesManager: UserPreferencesManager
 ) : ViewModel() {
+    
+    init {
+        // Suscribirse al flujo en tiempo real (usa caché de Firestore instantáneamente)
+        viewModelScope.launch {
+            repository.obtenerProductosFlow().collect { productos ->
+                _todosLosProductos.value = productos
+                
+                // Generar categorías dinámicamente
+                val categoriasUnicas = productos
+                    .map { normalizarCategoria(it.categoria) }
+                    .distinct()
+                    .sorted()
+                _categorias.value = listOf("Todas") + categoriasUnicas
+                
+                aplicarFiltros()
+            }
+        }
+        
+        // Disparar sincronización inicial en segundo plano
+        cargarProductos()
+    }
+
 
     private val _todosLosProductos = MutableStateFlow<List<Producto>>(emptyList())
     private val _productos = MutableStateFlow<List<Producto>>(emptyList())
@@ -67,17 +89,8 @@ class CatalogoViewModel @Inject constructor(
 
     fun cargarProductos() {
         viewModelScope.launch {
-            val productos = useCase.ejecutar()
-            _todosLosProductos.value = productos
-            
-            // Generar categorías dinámicamente
-            val categoriasUnicas = productos
-                .map { normalizarCategoria(it.categoria) }
-                .distinct()
-                .sorted()
-            _categorias.value = listOf("Todas") + categoriasUnicas
-            
-            aplicarFiltros()
+            // Trigger sync (this is now a background side-effect because of the Flow subscription)
+            useCase.ejecutar()
         }
     }
     
