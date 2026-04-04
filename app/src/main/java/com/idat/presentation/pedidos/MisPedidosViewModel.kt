@@ -3,6 +3,7 @@ package com.idat.presentation.pedidos
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.idat.core.auth.AdminAccess
 import com.idat.domain.model.Pedido
 import com.idat.domain.repository.PedidoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,7 +32,7 @@ class MisPedidosViewModel @Inject constructor(
     init {
         val user = auth.currentUser
         val userEmail = user?.email
-        _isAdmin.value = userEmail == "admin@shoppe.com"
+        _isAdmin.value = AdminAccess.isAdminEmail(userEmail)
 
         if (_isAdmin.value) {
             // Admin: Carga todos los pedidos

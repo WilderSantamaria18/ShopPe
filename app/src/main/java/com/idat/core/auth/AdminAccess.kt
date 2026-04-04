@@ -1,10 +1,12 @@
 package com.idat.core.auth
 
 object AdminAccess {
-    // Reemplaza por el correo admin real.
-    const val ADMIN_EMAIL = "yeffercastillovega24@gmail.com"
+    private val adminEmails = setOf(
+        "yeffercastillovega24@gmail.com"
+    ).map { it.trim().lowercase() }.toSet()
 
     fun isAdminEmail(email: String?): Boolean {
-        return email?.trim()?.lowercase() == ADMIN_EMAIL.lowercase()
+        val normalized = email?.trim()?.lowercase() ?: return false
+        return normalized in adminEmails
     }
 }

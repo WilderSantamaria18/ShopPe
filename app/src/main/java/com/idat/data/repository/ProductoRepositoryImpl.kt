@@ -2,6 +2,7 @@ package com.idat.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.channels.awaitClose
@@ -275,17 +276,37 @@ class ProductoRepositoryImpl @Inject constructor(
 
     override suspend fun crearProducto(producto: Producto): Long {
         val counterRef = firestore.collection(METADATA).document(COUNTERS)
-        val newId = firestore.runTransaction { transaction ->
-            val snapshot = transaction.get(counterRef)
-            val currentId = (snapshot.getLong(NEXT_PRODUCT_ID) ?: 1L).toInt()
-            transaction.set(counterRef, mapOf(NEXT_PRODUCT_ID to (currentId + 1)), SetOptions.merge())
+        return try {
+            firestore.runTransaction { transaction ->
+                val snapshot = transaction.get(counterRef)
+                val currentId = (snapshot.getLong(NEXT_PRODUCT_ID) ?: 1L).toInt()
+                transaction.set(counterRef, mapOf(NEXT_PRODUCT_ID to (currentId + 1)), SetOptions.merge())
 
-            val nuevoProducto = producto.copy(id = currentId)
-            transaction.set(productDoc(currentId), productoToMap(nuevoProducto))
-            currentId.toLong()
-        }.await()
+                val nuevoProducto = producto.copy(id = currentId)
+                transaction.set(productDoc(currentId), productoToMap(nuevoProducto))
+                currentId.toLong()
+            }.await()
+        } catch (e: FirebaseFirestoreException) {
+            if (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                createProductWithoutMetadataCounter(producto)
+            } else {
+                throw e
+            }
+        }
+    }
 
-        return newId
+    private suspend fun createProductWithoutMetadataCounter(producto: Producto): Long {
+        val lastSnapshot = firestore.collection(PRODUCTOS)
+            .orderBy("id", Query.Direction.DESCENDING)
+            .limit(1)
+            .get()
+            .await()
+
+        val lastId = (lastSnapshot.documents.firstOrNull()?.getLong("id") ?: 0L).toInt()
+        val newId = lastId + 1
+        val nuevoProducto = producto.copy(id = newId)
+        productDoc(newId).set(productoToMap(nuevoProducto)).await()
+        return newId.toLong()
     }
 
     override suspend fun actualizarProducto(producto: Producto) {

@@ -2,6 +2,9 @@ package com.idat.presentation.gestion
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestoreException
+import com.idat.core.auth.AdminAccess
 import com.idat.data.local.preferences.UserPreferencesManager
 import com.idat.domain.model.Producto
 import com.idat.domain.repository.ProductoRepository
@@ -16,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class GestionProductosViewModel @Inject constructor(
     private val repository: ProductoRepository,
-    private val userPreferencesManager: UserPreferencesManager
+    private val userPreferencesManager: UserPreferencesManager,
+    private val auth: FirebaseAuth
 ) : ViewModel() {
 
     // Lista de productos desde Firestore (se actualiza automáticamente)
@@ -57,6 +61,29 @@ class GestionProductosViewModel @Inject constructor(
         _busqueda.value = query
     }
 
+    private fun permissionDeniedMessage(): String {
+        val email = auth.currentUser?.email ?: "sin-email"
+        val uid = auth.currentUser?.uid ?: "sin-uid"
+        return "Firestore denego permisos. Sesion actual: $email ($uid). Verifica reglas para /productos y /metadata."
+    }
+
+    private fun mapError(defaultMessage: String, e: Exception): String {
+        return if (e is FirebaseFirestoreException && e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+            permissionDeniedMessage()
+        } else {
+            e.message ?: defaultMessage
+        }
+    }
+
+    private fun ensureAdminOrError(onError: (String) -> Unit): Boolean {
+        val currentEmail = auth.currentUser?.email
+        if (AdminAccess.isAdminEmail(currentEmail)) {
+            return true
+        }
+        onError("Acceso denegado: solo el administrador puede gestionar productos.")
+        return false
+    }
+
     // ========== CREAR ==========
     fun crearProducto(
         nombre: String,
@@ -71,6 +98,8 @@ class GestionProductosViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
+                if (!ensureAdminOrError(onError)) return@launch
+
                 if (nombre.isBlank() || precio <= 0) {
                     onError("Nombre y precio son obligatorios")
                     return@launch
@@ -89,7 +118,7 @@ class GestionProductosViewModel @Inject constructor(
                 repository.crearProducto(producto)
                 onSuccess()
             } catch (e: Exception) {
-                onError(e.message ?: "Error al crear producto")
+                onError(mapError("Error al crear producto", e))
             }
         }
     }
@@ -102,6 +131,8 @@ class GestionProductosViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
+                if (!ensureAdminOrError(onError)) return@launch
+
                 if (producto.nombre.isBlank() || producto.precio <= 0) {
                     onError("Nombre y precio son obligatorios")
                     return@launch
@@ -109,7 +140,7 @@ class GestionProductosViewModel @Inject constructor(
                 repository.actualizarProducto(producto)
                 onSuccess()
             } catch (e: Exception) {
-                onError(e.message ?: "Error al actualizar producto")
+                onError(mapError("Error al actualizar producto", e))
             }
         }
     }
@@ -122,10 +153,12 @@ class GestionProductosViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
+                if (!ensureAdminOrError(onError)) return@launch
+
                 repository.eliminarProducto(productoId)
                 onSuccess()
             } catch (e: Exception) {
-                onError(e.message ?: "Error al eliminar producto")
+                onError(mapError("Error al eliminar producto", e))
             }
         }
     }
