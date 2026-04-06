@@ -46,11 +46,12 @@ fun FavoritosScreen(
 ) {
     val productos by viewModel.favoritos.collectAsState()
     
+    // Usamos los colores del sistema para que respete el Tema Oscuro
     val pinkPrimary = Color(0xFFAB005A)
     val pinkContainer = Color(0xFFD80073)
-    val surfaceColor = Color(0xFFFFF8F8)
-    val onSurface = Color(0xFF27171C)
-    val surfaceContainerLow = Color(0xFFFFF0F2)
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val surfaceContainerLow = MaterialTheme.colorScheme.surfaceContainerLow
 
     Scaffold(
         containerColor = surfaceColor,
@@ -75,7 +76,7 @@ fun FavoritosScreen(
                 actions = {
                     Spacer(modifier = Modifier.width(48.dp)) // For centering
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White.copy(alpha = 0.8f))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = surfaceColor.copy(alpha = 0.8f))
             )
         },
         bottomBar = {
