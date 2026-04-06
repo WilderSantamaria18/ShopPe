@@ -63,7 +63,11 @@ fun CarritoScreen(
                     ) 
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { 
+                        navController.navigate("catalogo") {
+                            popUpTo("catalogo") { inclusive = true }
+                        }
+                    }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
@@ -133,25 +137,6 @@ fun CarritoScreen(
                         }
                     }
                 }
-
-                // Standard Navigation Bar
-                ShopPeBottomNavBar(
-                    currentSelection = "Bag",
-                    onNavigateToCatalogo = { navController.navigate("catalogo") },
-                    onNavigateToFavoritos = { navController.navigate("favoritos/fromCart") },
-                    onNavigateToCarrito = { /* Already here */ },
-                    onNavigateToGestion = { navController.navigate("gestion/fromCart") },
-                    onNavigateToPedidos = { navController.navigate("mis_pedidos") },
-                    onNavigateToAyuda = { navController.navigate("ayuda/fromCart") },
-                    onNavigateToConfiguracion = { navController.navigate("configuracion/fromCart") },
-                    onNavigateToPersonalizacion = { navController.navigate("personalizacion/fromCart") },
-                    onNavigateToDirecciones = { navController.navigate("direcciones") },
-                    onCerrarSesion = { 
-                        navController.navigate("login") {
-                            popUpTo(0) { inclusive = true }
-                        }
-                    }
-                )
             }
         }
     ) { paddingValues ->

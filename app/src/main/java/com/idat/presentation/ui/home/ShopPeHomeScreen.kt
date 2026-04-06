@@ -89,28 +89,6 @@ fun ShopPeHomeScreen(
                     containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
                 )
             )
-        },
-        bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                ShopPeBottomNavBar(
-                    currentSelection = "Explore",
-                    onNavigateToCatalogo = { /* Already here or navigate to catalogo */ },
-                    onNavigateToFavoritos = onNavigateToFavoritos,
-                    onNavigateToCarrito = onNavigateToCarrito,
-                    onNavigateToGestion = onNavigateToGestion,
-                    onNavigateToPedidos = onNavigateToPedidos,
-                    onNavigateToAyuda = onNavigateToAyuda,
-                    onNavigateToConfiguracion = onNavigateToConfiguracion,
-                    onNavigateToPersonalizacion = onNavigateToPersonalizacion,
-                    onNavigateToDirecciones = onNavigateToDirecciones,
-                    onCerrarSesion = onCerrarSesion
-                )
-            }
         }
     ) { paddingValues ->
         Column(

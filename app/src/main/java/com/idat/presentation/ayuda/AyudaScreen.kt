@@ -38,7 +38,11 @@ fun AyudaScreen(
             TopAppBar(
                 title = { Text("Centro de Ayuda", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { 
+                        navController.navigate("catalogo") {
+                            popUpTo("catalogo") { inclusive = true }
+                        }
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },

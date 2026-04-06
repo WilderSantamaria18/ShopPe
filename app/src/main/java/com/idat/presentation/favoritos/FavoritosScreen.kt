@@ -69,7 +69,11 @@ fun FavoritosScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { 
+                        navController.navigate("catalogo") {
+                            popUpTo("catalogo") { inclusive = true }
+                        }
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = pinkPrimary)
                     }
                 },
@@ -77,25 +81,6 @@ fun FavoritosScreen(
                     Spacer(modifier = Modifier.width(48.dp)) // For centering
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = surfaceColor.copy(alpha = 0.8f))
-            )
-        },
-        bottomBar = {
-            ShopPeBottomNavBar(
-                currentSelection = "Favoritos",
-                onNavigateToCatalogo = { navController.navigate("catalogo") },
-                onNavigateToFavoritos = { /* Already here */ },
-                onNavigateToCarrito = { navController.navigate("carrito") },
-                onNavigateToGestion = { navController.navigate("gestion/fromFav") },
-                onNavigateToPedidos = { navController.navigate("mis_pedidos") },
-                onNavigateToAyuda = { navController.navigate("ayuda/fromFav") },
-                onNavigateToConfiguracion = { navController.navigate("configuracion/fromFav") },
-                onNavigateToPersonalizacion = { navController.navigate("personalizacion/fromFav") },
-                onNavigateToDirecciones = { navController.navigate("direcciones") },
-                onCerrarSesion = { 
-                    navController.navigate("login") {
-                        popUpTo(0) { inclusive = true }
-                    }
-                }
             )
         }
     ) { paddingValues ->

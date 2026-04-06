@@ -26,6 +26,9 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.idat.domain.model.Producto
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
+
 @Composable
 fun ProductItem(
     producto: Producto,
@@ -38,7 +41,11 @@ fun ProductItem(
     tagText: String = "NEW IN"
 ) {
     val isDark = MaterialTheme.colorScheme.surface == Color(0xFF140C0E)
-    val surfaceLowestColor = if (isDark) Color(0xFF1F1215) else Color.White // Approximation for SurfaceContainerLowest
+    
+    // Contraste dinámico según el tema
+    val imageContainerColor = if (isDark) Color(0xFF1F1215) else Color(0xFFF8F0F2)
+    val outlineColor = if (isDark) Color(0xFF442B2F) else Color(0xFFE5D1D5)
+    
     val tertiaryFixedColor = if (isDark) Color(0xFF3C2900) else Color(0xFFFFDEA8)
     val onTertiaryFixedColor = if (isDark) Color(0xFFFFDEA8) else Color(0xFF271900)
 
@@ -52,7 +59,12 @@ fun ProductItem(
                 .fillMaxWidth()
                 .aspectRatio(3f / 4f)
                 .clip(RoundedCornerShape(12.dp))
-                .background(surfaceLowestColor)
+                .background(imageContainerColor)
+                .border(
+                    width = 0.5.dp,
+                    color = outlineColor,
+                    shape = RoundedCornerShape(12.dp)
+                )
         ) {
             AsyncImage(
                 model = producto.imagen,
@@ -68,7 +80,10 @@ fun ProductItem(
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
                     .size(36.dp)
-                    .background(Color.White.copy(alpha = 0.8f), RoundedCornerShape(percent = 50))
+                    .background(
+                        color = (if (isDark) Color.Black else Color.White).copy(alpha = 0.7f), 
+                        shape = RoundedCornerShape(percent = 50)
+                    )
             ) {
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,

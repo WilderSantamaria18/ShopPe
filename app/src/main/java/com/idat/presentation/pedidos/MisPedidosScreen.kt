@@ -76,7 +76,8 @@ fun MisPedidosScreen(
 
     val pinkPrimary = Color(0xFFAB005A)
     val pinkContainer = Color(0xFFD80073)
-    val surfaceColor = Color(0xFFFFF8F8)
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val onSurface = MaterialTheme.colorScheme.onSurface
 
     Scaffold(
         containerColor = surfaceColor,
@@ -88,11 +89,15 @@ fun MisPedidosScreen(
                         fontWeight = FontWeight.ExtraBold, 
                         fontSize = 22.sp, 
                         letterSpacing = (-0.5).sp,
-                        color = Color(0xFF27171C)
+                        color = onSurface
                     ) 
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { 
+                        navController.navigate("catalogo") {
+                            popUpTo("catalogo") { inclusive = true }
+                        }
+                    }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = pinkPrimary)
                     }
                 },
@@ -104,25 +109,7 @@ fun MisPedidosScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = surfaceColor.copy(alpha = 0.8f))
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        bottomBar = {
-            ShopPeBottomNavBar(
-                currentSelection = "Perfil",
-                onNavigateToCatalogo = { navController.navigate("catalogo") },
-                onNavigateToFavoritos = { navController.navigate("favoritos/fromOrders") },
-                onNavigateToCarrito = { navController.navigate("carrito") },
-                onNavigateToGestion = { navController.navigate("gestion/fromOrders") },
-                onNavigateToAyuda = { navController.navigate("ayuda/fromOrders") },
-                onNavigateToConfiguracion = { navController.navigate("configuracion/fromOrders") },
-                onNavigateToPersonalizacion = { navController.navigate("personalizacion/fromOrders") },
-                onNavigateToDirecciones = { navController.navigate("direcciones") },
-                onCerrarSesion = {
-                    navController.navigate("login") {
-                        popUpTo(0) { inclusive = true }
-                    }
-                }
-            )
-        }
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -150,7 +137,7 @@ fun MisPedidosScreen(
                     "Pedidos Recientes",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF27171C),
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
@@ -267,7 +254,7 @@ fun OrderCard(
             .fillMaxWidth()
             .shadow(4.dp, RoundedCornerShape(32.dp), ambientColor = Color.Black.copy(alpha = 0.05f)),
         shape = RoundedCornerShape(32.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
@@ -338,7 +325,7 @@ fun OrderCard(
                         productName, 
                         fontWeight = FontWeight.Bold, 
                         fontSize = 16.sp, 
-                        color = Color(0xFF27171C),
+                        color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -497,11 +484,11 @@ fun FilterTabs(selected: String, onSelect: (String) -> Unit) {
             Box(
                 modifier = Modifier
                     .clip(CircleShape)
-                    .background(if (isSelected) pinkPrimary else Color(0xFFFEE1E7))
+                    .background(if (isSelected) pinkPrimary else MaterialTheme.colorScheme.surfaceVariant)
                     .clickable { onSelect(filter) }
                     .padding(horizontal = 24.dp, vertical = 10.dp)
             ) {
-                Text(filter, fontSize = 14.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium, color = if (isSelected) Color.White else Color(0xFF5A3F47))
+                Text(filter, fontSize = 14.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium, color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -512,7 +499,7 @@ fun PurchaseSummarySection(totalMes: Double, pedidosAnio: String, puntosShoppe: 
     val pinkPrimary = Color(0xFFAB005A)
     val pinkContainer = Color(0xFFD80073)
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text("Resumen de Compras", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF27171C), modifier = Modifier.padding(bottom = 20.dp))
+        Text("Resumen de Compras", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(bottom = 20.dp))
         Box(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(32.dp)).background(Brush.linearGradient(listOf(pinkPrimary, pinkContainer))).padding(28.dp)) {
             Column {
                 Text("GASTO TOTAL DEL MES", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.7f), letterSpacing = 1.5.sp)
@@ -537,10 +524,10 @@ fun PurchaseSummarySection(totalMes: Double, pedidosAnio: String, puntosShoppe: 
 
 @Composable
 fun StatBox(modifier: Modifier, label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector, iconColor: Color) {
-    Column(modifier = modifier.clip(RoundedCornerShape(32.dp)).background(Color(0xFFFEE1E7)).border(1.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(32.dp)).padding(24.dp), verticalArrangement = Arrangement.SpaceBetween) {
+    Column(modifier = modifier.clip(RoundedCornerShape(32.dp)).background(MaterialTheme.colorScheme.surfaceVariant).border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(32.dp)).padding(24.dp), verticalArrangement = Arrangement.SpaceBetween) {
         Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(24.dp))
         Spacer(modifier = Modifier.height(12.dp))
-        Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFF5A3F47), letterSpacing = 1.sp)
-        Text(value, fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color(0xFF27171C))
+        Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant, letterSpacing = 1.sp)
+        Text(value, fontSize = 24.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
     }
 }

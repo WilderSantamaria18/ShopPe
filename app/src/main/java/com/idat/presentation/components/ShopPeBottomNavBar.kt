@@ -120,11 +120,6 @@ fun ShopPeBottomNavBar(
                         onClick = { showProfileMenu = false; onNavigateToDirecciones() },
                         leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null, tint = pinkPrimary) }
                     )
-                    DropdownMenuItem(
-                        text = { Text("Configuración", color = MaterialTheme.colorScheme.onSurface) },
-                        onClick = { showProfileMenu = false; onNavigateToConfiguracion() },
-                        leadingIcon = { Icon(Icons.Default.Settings, contentDescription = null, tint = pinkPrimary) }
-                    )
                     if (isAdmin) {
                         DropdownMenuItem(
                             text = { Text("Gestión de Inventario", color = MaterialTheme.colorScheme.onSurface) },

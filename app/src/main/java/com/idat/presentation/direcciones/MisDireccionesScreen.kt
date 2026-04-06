@@ -95,7 +95,11 @@ fun MisDireccionesScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { 
+                        navController.navigate("catalogo") {
+                            popUpTo("catalogo") { inclusive = true }
+                        }
+                    }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = pinkPrimary)
                     }
                 },
