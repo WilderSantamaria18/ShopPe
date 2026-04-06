@@ -6,6 +6,8 @@ import com.idat.data.repository.ProductoRepositoryImpl
 import com.idat.data.repository.PedidoRepositoryImpl
 import com.idat.domain.repository.ProductoRepository
 import com.idat.domain.repository.PedidoRepository
+import com.idat.domain.repository.UsuarioRepository
+import com.idat.data.repository.UsuarioRepositoryImpl
 import com.idat.data.remote.service.ProductoApiService
 import dagger.Module
 import dagger.Provides
@@ -49,5 +51,13 @@ object RepositoryModule {
         firestore: FirebaseFirestore
     ): com.idat.domain.repository.TarjetaRepository {
         return com.idat.data.repository.TarjetaRepositoryImpl(firestore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUsuarioRepository(
+        firestore: FirebaseFirestore
+    ): UsuarioRepository {
+        return UsuarioRepositoryImpl(firestore)
     }
 }

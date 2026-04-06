@@ -57,6 +57,8 @@ android {
 }
 
 dependencies {
+    // 🔹 Splash Screen oficial
+    implementation("androidx.core:core-splashscreen:1.0.1")
     // 🔹 Core Android
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -81,6 +83,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-storage-ktx")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
     
     // 🔹 Google Sign-In

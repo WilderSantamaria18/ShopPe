@@ -4,30 +4,43 @@ import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.idat.R
 
@@ -37,15 +50,28 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var showWelcomeDialog by remember { mutableStateOf(false) }
 
     val loginExitoso by viewModel.loginExitoso.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val nombreUsuarioState by viewModel.nombreUsuario.collectAsState()
+    val rememberMe by viewModel.rememberMe.collectAsState()
+    val savedEmail by viewModel.savedEmail.collectAsState()
+    val savedPassword by viewModel.savedPassword.collectAsState()
+    
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val focusManager = LocalFocusManager.current
+
+    // Cargar datos guardados si existen
+    LaunchedEffect(savedEmail, savedPassword) {
+        if (savedEmail.isNotEmpty()) email = savedEmail
+        if (savedPassword.isNotEmpty()) password = savedPassword
+    }
 
     val gso = remember {
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("944113440911-e6gprivm1354fnlqoi6dnpiibh75glml.apps.googleusercontent.com")
+            .requestIdToken("663208236763-ooknq4ajtkj3bkrknien9q52lf3p9utm.apps.googleusercontent.com")
             .requestEmail()
             .build()
     }
@@ -70,11 +96,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
     }
 
     if (loginExitoso) {
-        LaunchedEffect(Unit) {
-            navController.navigate("catalogo") {
-                popUpTo("login") { inclusive = true }
-            }
-        }
+        showWelcomeDialog = true
     }
 
     errorMessage?.let { message ->
@@ -104,8 +126,9 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                     painter = painterResource(id = R.drawable.logo_shoppe),
                     contentDescription = "Logo ShopPe",
                     modifier = Modifier
-                        .size(120.dp)
-                        .padding(bottom = 32.dp)
+                        .size(150.dp) // Aumentamos un poco el tamaño contenedor
+                        .padding(bottom = 16.dp),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Fit // Asegura que quepa completo
                 )
 
                 Text(
@@ -123,6 +146,13 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                     singleLine = true,
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Down) }
+                    ),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
@@ -149,6 +179,13 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                     singleLine = true,
                     shape = RoundedCornerShape(8.dp),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = { focusManager.clearFocus() }
+                    ),
                     trailingIcon = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
@@ -175,10 +212,13 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { viewModel.setRememberMe(!rememberMe) }
+                    ) {
                         Checkbox(
-                            checked = false,
-                            onCheckedChange = { },
+                            checked = rememberMe,
+                            onCheckedChange = { viewModel.setRememberMe(it) },
                             colors = CheckboxDefaults.colors(
                                 checkedColor = MaterialTheme.colorScheme.secondary,
                                 uncheckedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
@@ -224,9 +264,9 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Divider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f))
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f))
                     Text("O", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
-                    Divider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f))
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f))
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -260,7 +300,6 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                // Botón para registrarse
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
@@ -279,6 +318,78 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                             color = MaterialTheme.colorScheme.secondary,
                             fontWeight = FontWeight.Bold
                         )
+                    }
+                }
+            }
+        }
+    }
+
+    // Modal de Bienvenida
+    if (showWelcomeDialog) {
+        Dialog(onDismissRequest = { }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFAB005A).copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(50.dp),
+                            tint = Color(0xFFAB005A)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = "¡Bienvenido a ShopPe!",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Hola, $nombreUsuarioState. Qué gusto tenerte de vuelta.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Button(
+                        onClick = {
+                            showWelcomeDialog = false
+                            navController.navigate("catalogo") {
+                                popUpTo("login") { inclusive = true }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFAB005A))
+                    ) {
+                        Text("Empezar a comprar", fontWeight = FontWeight.Bold)
                     }
                 }
             }

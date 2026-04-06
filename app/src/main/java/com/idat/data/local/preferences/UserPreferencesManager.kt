@@ -23,49 +23,38 @@ class UserPreferencesManager @Inject constructor(
         val VIEW_MODE_KEY = stringPreferencesKey("view_mode") // "grid" o "list"
         val USER_NAME_KEY = stringPreferencesKey("user_name")
         val USER_PHOTO_KEY = stringPreferencesKey("user_photo")
+        
+        // Nuevas llaves para Recuérdame
+        val REMEMBER_ME_KEY = booleanPreferencesKey("remember_me")
+        val SAVED_EMAIL_KEY = stringPreferencesKey("saved_email")
+        val SAVED_PASSWORD_KEY = stringPreferencesKey("saved_password")
     }
 
-    val isDarkTheme: Flow<Boolean> = context.dataStore.data
-        .map { preferences ->
-            preferences[THEME_KEY] ?: false
-        }
-
-    val viewMode: Flow<String> = context.dataStore.data
-        .map { preferences ->
-            preferences[VIEW_MODE_KEY] ?: "grid"
-        }
-
-    val userName: Flow<String> = context.dataStore.data
-        .map { preferences ->
-            preferences[USER_NAME_KEY] ?: ""
-        }
-
-    val userPhoto: Flow<String> = context.dataStore.data
-        .map { preferences ->
-            preferences[USER_PHOTO_KEY] ?: ""
-        }
+    val isDarkTheme: Flow<Boolean> = context.dataStore.data.map { it[THEME_KEY] ?: false }
+    val viewMode: Flow<String> = context.dataStore.data.map { it[VIEW_MODE_KEY] ?: "grid" }
+    
+    val rememberMe: Flow<Boolean> = context.dataStore.data.map { it[REMEMBER_ME_KEY] ?: false }
+    val savedEmail: Flow<String> = context.dataStore.data.map { it[SAVED_EMAIL_KEY] ?: "" }
+    val savedPassword: Flow<String> = context.dataStore.data.map { it[SAVED_PASSWORD_KEY] ?: "" }
 
     suspend fun setDarkTheme(isDark: Boolean) {
-        context.dataStore.edit { preferences ->
-            preferences[THEME_KEY] = isDark
-        }
+        context.dataStore.edit { it[THEME_KEY] = isDark }
     }
 
     suspend fun setViewMode(mode: String) {
-        context.dataStore.edit { preferences ->
-            preferences[VIEW_MODE_KEY] = mode
-        }
+        context.dataStore.edit { it[VIEW_MODE_KEY] = mode }
     }
 
-    suspend fun setUserName(name: String) {
+    suspend fun setRememberMe(remember: Boolean, email: String = "", password: String = "") {
         context.dataStore.edit { preferences ->
-            preferences[USER_NAME_KEY] = name
-        }
-    }
-
-    suspend fun setUserPhoto(photoUrl: String) {
-        context.dataStore.edit { preferences ->
-            preferences[USER_PHOTO_KEY] = photoUrl
+            preferences[REMEMBER_ME_KEY] = remember
+            if (remember) {
+                preferences[SAVED_EMAIL_KEY] = email
+                preferences[SAVED_PASSWORD_KEY] = password
+            } else {
+                preferences[SAVED_EMAIL_KEY] = ""
+                preferences[SAVED_PASSWORD_KEY] = ""
+            }
         }
     }
 }

@@ -3,7 +3,7 @@
     <!-- Tema principal de la app -->
     <style name="Theme.MiAplicacion" parent="android:Theme.Material.Light.NoActionBar" />
 
-    <!-- Tema específico para el Splash Screen -->
+    <!-- Tema específico para el Splash Screen (idéntico al de values) -->
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
         <!-- Fondo blanco -->
         <item name="windowSplashScreenBackground">#FFFFFF</item>

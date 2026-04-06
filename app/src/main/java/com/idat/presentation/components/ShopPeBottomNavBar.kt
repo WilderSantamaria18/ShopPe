@@ -101,6 +101,11 @@ fun ShopPeBottomNavBar(
                     modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
                 ) {
                     DropdownMenuItem(
+                        text = { Text("Mi Perfil", color = MaterialTheme.colorScheme.onSurface) },
+                        onClick = { showProfileMenu = false; onNavigateToConfiguracion() },
+                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = pinkPrimary) }
+                    )
+                    DropdownMenuItem(
                         text = { Text("Mis Pedidos", color = MaterialTheme.colorScheme.onSurface) },
                         onClick = { showProfileMenu = false; onNavigateToPedidos() },
                         leadingIcon = { Icon(Icons.Default.ReceiptLong, contentDescription = null, tint = pinkPrimary) }
