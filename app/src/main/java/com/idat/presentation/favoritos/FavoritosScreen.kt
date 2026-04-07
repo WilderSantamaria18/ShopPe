@@ -45,6 +45,7 @@ fun FavoritosScreen(
     viewModel: FavoritosViewModel = hiltViewModel()
 ) {
     val productos by viewModel.favoritos.collectAsState()
+    val recomendaciones by viewModel.recomendaciones.collectAsState()
     
     // Usamos los colores del sistema para que respete el Tema Oscuro
     val pinkPrimary = Color(0xFFAB005A)
@@ -102,7 +103,8 @@ fun FavoritosScreen(
                     FavoritoCard(
                         producto = producto,
                         onFavoriteClick = { viewModel.eliminarDeFavoritos(producto.id) },
-                        onAddToCart = { viewModel.agregarAlCarrito(producto) }
+                        onAddToCart = { viewModel.agregarAlCarrito(producto) },
+                        onClick = { navController.navigate("detalle/${producto.id}") }
                     )
                 }
             }
@@ -134,18 +136,12 @@ fun FavoritosScreen(
                         modifier = Modifier.padding(horizontal = 0.dp),
                         horizontalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        item {
+                        items(recomendaciones) { producto ->
                             RecommendationCard(
-                                title = "Pañuelo de Seda Pura",
-                                price = "S/ 120.00",
-                                imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuChQBCAye48yleXP8toUwkxWZoZC-z4xVCmDr7l9q0WpJF6S9WFkl6gP9u5i2HUPXqeMJzA0Dh63TRsmAxqQ-Ovu1uTdhB-OK7hhGNxDLN4-yb37Fi3TLy40IYCptTWoqKRoZcY7Nlj-8m2l2TsT3I11SSdh9Y5ueCVWecGhrZJAoAiZiiiBQ_syeqMZdfilet7Q9oTd3Kr6fxOuQprFAv1DnK92ZbW9VwIT8hmmNyMno5STNX5qhfldE0hYB5Wbs1A8Vy8ZvjW0ME"
-                            )
-                        }
-                        item {
-                            RecommendationCard(
-                                title = "Bolso de Cuero Artisan",
-                                price = "S/ 580.00",
-                                imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuA-oped9eCT4L1yEhjVuu17ly8FAf8hlEjUMB6KY-2dM_K9gNDGNQUUb591dVlUtxkSBtgX6akSUO6VRAtXUWTmsD_6sWTKyr9Pa1juJLiVDTwykdn6fgiZdJ--dzt9EPJ23ENIRWPCt7UD6gunWPMS2S_twg_rajZFXbYaUoMZ4UdIWO1oWlBZ_XrrUrPf1GXwV9gtOHHWA2qtY1bJCHAGXLpOmlnmdZAMjwWaEOX7I-y-H4n2rfzD0JvyRDzpOOWs5gxoQhuyBiI"
+                                title = producto.nombre,
+                                price = "S/ ${String.format("%.2f", producto.precio)}",
+                                imageUrl = producto.imagen,
+                                onClick = { navController.navigate("detalle/${producto.id}") }
                             )
                         }
                     }
@@ -160,24 +156,36 @@ fun FavoritosScreen(
 fun FavoritoCard(
     producto: Producto,
     onFavoriteClick: () -> Unit,
-    onAddToCart: () -> Unit
+    onAddToCart: () -> Unit,
+    onClick: () -> Unit
 ) {
     val pinkPrimary = Color(0xFFAB005A)
     val pinkContainer = Color(0xFFD80073)
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    
+    // Sincronizado con ProductItem.kt
+    val isDark = MaterialTheme.colorScheme.surface == Color(0xFF140C0E)
+    val imageContainerColor = if (isDark) Color(0xFF1F1215) else Color(0xFFF8F0F2)
+    val outlineColor = if (isDark) Color(0xFF442B2F) else Color(0xFFE5D1D5)
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.fillMaxWidth().clickable { onClick() }) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(3f / 4f)
                 .clip(RoundedCornerShape(24.dp))
-                .background(Color(0xFFFFF0F2))
+                .background(imageContainerColor)
+                .border(
+                    width = 0.5.dp,
+                    color = outlineColor,
+                    shape = RoundedCornerShape(24.dp)
+                )
         ) {
             AsyncImage(
                 model = producto.imagen,
                 contentDescription = producto.nombre,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                modifier = Modifier.fillMaxSize().padding(16.dp),
+                contentScale = ContentScale.Fit
             )
             
             IconButton(
@@ -186,7 +194,10 @@ fun FavoritoCard(
                     .align(Alignment.TopEnd)
                     .padding(12.dp)
                     .size(36.dp)
-                    .background(Color.White.copy(alpha = 0.9f), CircleShape)
+                    .background(
+                        color = (if (isDark) Color.Black else Color.White).copy(alpha = 0.7f),
+                        shape = CircleShape
+                    )
             ) {
                 Icon(
                     Icons.Default.Favorite,
@@ -205,7 +216,7 @@ fun FavoritoCard(
             fontWeight = FontWeight.Bold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            color = Color(0xFF27171C)
+            color = onSurface
         )
         
         Text(
@@ -243,12 +254,22 @@ fun FavoritoCard(
 }
 
 @Composable
-fun RecommendationCard(title: String, price: String, imageUrl: String) {
+fun RecommendationCard(title: String, price: String, imageUrl: String, onClick: () -> Unit) {
+    val pinkPrimary = Color(0xFFAB005A)
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    
+    // Sincronizado con ProductItem.kt
+    val isDark = MaterialTheme.colorScheme.surface == Color(0xFF140C0E)
+    val containerColor = if (isDark) Color(0xFF1F1215) else Color(0xFFF8F0F2)
+    val outlineColor = if (isDark) Color(0xFF442B2F) else Color(0xFFE5D1D5)
+
     Row(
         modifier = Modifier
             .width(280.dp)
             .clip(RoundedCornerShape(24.dp))
-            .background(Color(0xFFFFF0F2))
+            .background(containerColor)
+            .border(0.5.dp, outlineColor, RoundedCornerShape(24.dp))
+            .clickable { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -257,18 +278,33 @@ fun RecommendationCard(title: String, price: String, imageUrl: String) {
             contentDescription = title,
             modifier = Modifier
                 .size(80.dp)
-                .clip(RoundedCornerShape(16.dp)),
-            contentScale = ContentScale.Crop
+                .clip(RoundedCornerShape(16.dp))
+                .background(if(isDark) Color(0xFF2D2D2D) else Color.White)
+                .padding(8.dp),
+            contentScale = ContentScale.Fit
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF27171C), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(price, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, color = Color(0xFFAB005A), modifier = Modifier.padding(top = 4.dp))
+            Text(
+                title, 
+                fontWeight = FontWeight.Bold, 
+                fontSize = 14.sp, 
+                color = onSurface, 
+                maxLines = 1, 
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                price, 
+                fontWeight = FontWeight.ExtraBold, 
+                fontSize = 16.sp, 
+                color = pinkPrimary, 
+                modifier = Modifier.padding(top = 4.dp)
+            )
             Text(
                 "DESCUBRIR",
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
-                color = Color(0xFF455F88),
+                color = if(isDark) Color(0xFF86A9E0) else Color(0xFF455F88),
                 letterSpacing = 1.sp,
                 modifier = Modifier.padding(top = 4.dp)
             )
@@ -278,6 +314,8 @@ fun RecommendationCard(title: String, price: String, imageUrl: String) {
 
 @Composable
 fun EmptyFavoritesState() {
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
     Column(
         modifier = Modifier.fillMaxWidth().padding(vertical = 60.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -289,8 +327,8 @@ fun EmptyFavoritesState() {
             tint = Color(0xFFE2BDC6)
         )
         Spacer(modifier = Modifier.height(24.dp))
-        Text("Tu lista está vacía", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF27171C))
-        Text("Explora nuestra tienda y guarda tus productos favoritos aquí.", textAlign = TextAlign.Center, fontSize = 14.sp, color = Color(0xFF8E6F77), modifier = Modifier.padding(start = 32.dp, top = 8.dp, end = 32.dp))
+        Text("Tu lista está vacía", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = onSurface)
+        Text("Explora nuestra tienda y guarda tus productos favoritos aquí.", textAlign = TextAlign.Center, fontSize = 14.sp, color = onSurfaceVariant, modifier = Modifier.padding(start = 32.dp, top = 8.dp, end = 32.dp))
     }
 }
 

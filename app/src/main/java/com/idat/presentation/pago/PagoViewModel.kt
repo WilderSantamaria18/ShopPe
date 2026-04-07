@@ -5,7 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.idat.domain.model.Pedido
 import com.idat.domain.model.Tarjeta
-import com.idat.domain.repository.DireccionRepository
+import com.idat.domain.model.Direccion
+import com.idat.domain.repository.UsuarioRepository
 import com.idat.domain.repository.PedidoRepository
 import com.idat.domain.repository.ProductoRepository
 import com.idat.domain.repository.TarjetaRepository
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.firstOrNull
 import java.util.UUID
 import javax.inject.Inject
 
@@ -24,16 +26,16 @@ import javax.inject.Inject
 class PagoViewModel @Inject constructor(
     private val pedidoRepository: PedidoRepository,
     private val productoRepository: ProductoRepository,
-    private val direccionRepository: DireccionRepository,
+    private val usuarioRepository: UsuarioRepository,
     private val tarjetaRepository: TarjetaRepository,
     private val auth: FirebaseAuth
 ) : ViewModel() {
 
-    private val _selectedDireccion = MutableStateFlow<String?>(null)
-    val selectedDireccion: StateFlow<String?> = _selectedDireccion.asStateFlow()
+    private val _selectedDireccion = MutableStateFlow<Direccion?>(null)
+    val selectedDireccion: StateFlow<Direccion?> = _selectedDireccion.asStateFlow()
 
     val direcciones = auth.currentUser?.uid?.let { userId ->
-        direccionRepository.getDirecciones(userId)
+        usuarioRepository.getDirecciones(userId)
     }?.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val cartItems = productoRepository.obtenerCarrito().stateIn(
@@ -44,7 +46,11 @@ class PagoViewModel @Inject constructor(
         items.sumOf { it.precio * it.cantidad }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
-    fun seleccionarDireccion(direccion: String) {
+    val tarjetas = auth.currentUser?.uid?.let { userId ->
+        tarjetaRepository.getTarjetas(userId)
+    }?.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun seleccionarDireccion(direccion: Direccion) {
         _selectedDireccion.value = direccion
     }
 
@@ -63,15 +69,24 @@ class PagoViewModel @Inject constructor(
             }
 
             val direccionFinal = _selectedDireccion.value
-            if (direccionFinal.isNullOrBlank()) {
+            if (direccionFinal == null) {
                 onError("Debe seleccionar una dirección de envío")
                 return@launch
             }
 
             val user = auth.currentUser
             val userId = user?.uid ?: ""
-            val customerEmail = user?.email ?: "anonimo@shoppe.com"
-            val customerName = user?.displayName ?: customerEmail.substringBefore("@")
+            
+            // Obtener datos reales del usuario desde el repositorio
+            val usuarioCompleto = usuarioRepository.getUsuario(userId).firstOrNull()
+            
+            val customerEmail = usuarioCompleto?.email ?: user?.email ?: ""
+            val customerName = if (usuarioCompleto != null) {
+                "${usuarioCompleto.nombre} ${usuarioCompleto.apellido}".trim()
+            } else {
+                user?.displayName ?: customerEmail.substringBefore("@")
+            }
+            val customerDni = usuarioCompleto?.dni ?: ""
             
             // Mask and Save card if provided
             if (cardNumber != null && cardNumber.isNotBlank()) {
@@ -98,7 +113,8 @@ class PagoViewModel @Inject constructor(
                 userId = userId,
                 clienteEmail = customerEmail,
                 clienteNombre = customerName,
-                direccion = direccionFinal
+                direccion = "${direccionFinal.nombreLugar}: ${direccionFinal.calle}",
+                dni = customerDni // Necesitaremos agregar este campo al modelo Pedido
             )
 
             val resultSave = pedidoRepository.savePedido(pedido)

@@ -29,6 +29,13 @@ class FavoritosViewModel @Inject constructor(
         initialValue = false
     )
 
+    val recomendaciones: StateFlow<List<Producto>> = repository.obtenerRecomendaciones()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
     fun eliminarDeFavoritos(productoId: Int) {
         viewModelScope.launch {
             repository.eliminarDeFavoritos(productoId)

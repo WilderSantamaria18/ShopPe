@@ -108,8 +108,8 @@ class MisPedidosViewModel @Inject constructor(
 
     val puntosShoppe = pedidos.map { list ->
         val totalHistorico = list.sumOf { it.total }
-        // 10 puntos por cada 1 unidad de moneda
-        String.format("%,d", (totalHistorico * 10).toInt())
+        // 1 punto por cada sol gastado (redondeado hacia abajo)
+        String.format("%,d", totalHistorico.toInt())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "0")
 
     fun actualizarEstadoPedido(pedidoId: String, nuevoEstado: String) {

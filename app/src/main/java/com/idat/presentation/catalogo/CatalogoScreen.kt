@@ -30,6 +30,11 @@ fun CatalogoScreen(
     LaunchedEffect(Unit) {
         viewModel.cargarProductos()
     }
+    
+    // Log para depuración
+    LaunchedEffect(categorias) {
+        println("DEBUG_CATEGORIAS: Recibidas ${categorias.size} categorías: $categorias")
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }

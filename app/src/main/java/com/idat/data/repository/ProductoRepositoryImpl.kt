@@ -362,4 +362,24 @@ class ProductoRepositoryImpl @Inject constructor(
             }
         }
     }
+
+    override fun obtenerRecomendaciones(): Flow<List<Producto>> {
+        return callbackFlow {
+            val listener = firestore.collection(PRODUCTOS)
+                .orderBy("calificacion", Query.Direction.DESCENDING)
+                .limit(5)
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        Log.e("ProductoRepositoryImpl", "Error obteniendo recomendaciones: ${error.message}")
+                        close(error)
+                        return@addSnapshotListener
+                    }
+                    val productos = snapshot?.documents
+                        ?.mapNotNull { mapToProducto(it.data ?: emptyMap()) }
+                        ?: emptyList()
+                    trySend(productos)
+                }
+            awaitClose { listener.remove() }
+        }
+    }
 }

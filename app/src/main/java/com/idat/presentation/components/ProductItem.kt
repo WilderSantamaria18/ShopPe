@@ -69,8 +69,10 @@ fun ProductItem(
             AsyncImage(
                 model = producto.imagen,
                 contentDescription = producto.nombre,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                contentScale = ContentScale.Fit, // Cambiado a Fit
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp) // Añadido padding interno para el "aire"
             )
 
             // Favorite Button
@@ -134,7 +136,7 @@ fun ProductItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "$${producto.precio}",
+                text = "S/. ${String.format("%.2f", producto.precio)}",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary

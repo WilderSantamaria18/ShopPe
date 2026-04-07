@@ -17,6 +17,7 @@ fun DetalleScreen(
     viewModel: DetalleViewModel = hiltViewModel()
 ) {
     val producto by viewModel.producto.collectAsState()
+    val recomendaciones by viewModel.recomendaciones.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -28,12 +29,16 @@ fun DetalleScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             ShopPeProductDetailsScreen(
                 producto = prod,
+                recomendaciones = recomendaciones,
                 onBackClick = { navController.popBackStack() },
                 onAddToCart = {
                     viewModel.agregarAlCarrito(prod)
                     scope.launch {
                         snackbarHostState.showSnackbar("Producto agregado al carrito", duration = SnackbarDuration.Short)
                     }
+                },
+                onProductClick = { newId ->
+                    navController.navigate("detalle/$newId")
                 }
             )
             SnackbarHost(

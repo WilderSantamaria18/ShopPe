@@ -1,6 +1,10 @@
 package com.idat.presentation.direcciones
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,7 +36,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.idat.domain.model.Direccion
-import com.idat.domain.model.Tarjeta
 import com.idat.presentation.components.*
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -50,8 +53,6 @@ fun MisDireccionesScreen(
     val error by direccionesViewModel.error.collectAsState()
     val ubicacionActual by direccionesViewModel.ubicacionActual.collectAsState()
     val estaCargandoUbicacion by direccionesViewModel.estaCargandoUbicacion.collectAsState()
-
-    val tarjetas by direccionesViewModel.tarjetas.collectAsState()
 
     val locationPermissionsState = rememberMultiplePermissionsState(
         listOf(
@@ -78,10 +79,10 @@ fun MisDireccionesScreen(
         }
     }
 
-    val pinkPrimary = Color(0xFFAB005A)
-    val pinkContainer = Color(0xFFD80073)
-    val surfaceContainerLow = Color(0xFFFFF0F2)
-    val surfaceVariant = Color(0xFFF8DBE2)
+    val isDark = isSystemInDarkTheme()
+    val surfaceContainerLow = if (isDark) Color(0xFF1F1215) else Color(0xFFFFF0F2)
+    val pinkContainer = MaterialTheme.colorScheme.primary
+    val pinkPrimary = MaterialTheme.colorScheme.primary
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -89,16 +90,14 @@ fun MisDireccionesScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Mi Perfil de Pago",
+                        text = "Mis Direcciones",
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = { 
-                        navController.navigate("catalogo") {
-                            popUpTo("catalogo") { inclusive = true }
-                        }
+                        navController.popBackStack()
                     }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = pinkPrimary)
                     }
@@ -109,20 +108,6 @@ fun MisDireccionesScreen(
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    selectedDireccion = null
-                    showAddressSheet = true
-                },
-                containerColor = pinkContainer,
-                contentColor = Color.White,
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.padding(bottom = 16.dp, end = 8.dp)
-            ) {
-                Icon(Icons.Default.AddLocationAlt, contentDescription = "Añadir dirección", modifier = Modifier.size(28.dp))
-            }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
@@ -162,32 +147,6 @@ fun MisDireccionesScreen(
                         pinkContainer = pinkContainer,
                         surfaceContainerLow = surfaceContainerLow
                     )
-                }
-
-                if (tarjetas.isNotEmpty()) {
-                    item {
-                        Column(modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)) {
-                            Text(
-                                text = "Mis Tarjetas",
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = pinkPrimary
-                            )
-                            Text(
-                                text = "Métodos de pago guardados de tus compras.",
-                                color = Color.Gray,
-                                fontSize = 13.sp
-                            )
-                        }
-                    }
-
-                    items(tarjetas) { tarjeta ->
-                        TarjetaCard(
-                            tarjeta = tarjeta,
-                            onDelete = { direccionesViewModel.deleteTarjeta(tarjeta.id) },
-                            pinkPrimary = pinkPrimary
-                        )
-                    }
                 }
 
                 item {
@@ -271,9 +230,9 @@ fun AddressCard(
     pinkContainer: Color,
     surfaceContainerLow: Color
 ) {
-    val icon = when (direccion.tipoIcono) {
-        "work" -> Icons.Default.Work
-        "apartment" -> Icons.Default.Apartment
+    val icon = when (direccion.nombreLugar) {
+        "Oficina" -> Icons.Default.Work
+        "Depa" -> Icons.Default.Apartment
         else -> Icons.Default.Home
     }
 
@@ -281,9 +240,9 @@ fun AddressCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(if (direccion.esPredeterminada) Color.White else surfaceContainerLow)
+            .background(if (direccion.esPredeterminada) MaterialTheme.colorScheme.surfaceVariant else surfaceContainerLow)
             .then(
-                if (direccion.esPredeterminada) Modifier.border(2.dp, pinkContainer.copy(alpha = 0.2f), RoundedCornerShape(24.dp))
+                if (direccion.esPredeterminada) Modifier.border(2.dp, pinkContainer.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
                 else Modifier
             )
             .clickable { onSetDefault() }
@@ -311,7 +270,7 @@ fun AddressCard(
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
-                        Text(text = direccion.tag, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text(text = direccion.nombreLugar, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
                         if (direccion.esPredeterminada) {
                             Box(
                                 modifier = Modifier
@@ -331,25 +290,19 @@ fun AddressCard(
                         Icon(Icons.Default.Edit, contentDescription = "Editar", tint = pinkPrimary, modifier = Modifier.size(20.dp))
                     }
                     IconButton(onClick = onDelete) {
-                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Gray.copy(alpha = 0.5f), modifier = Modifier.size(20.dp))
+                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), modifier = Modifier.size(20.dp))
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = direccion.direccion, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+            Text(text = direccion.calle, fontWeight = FontWeight.Medium, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
             
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(12.dp), tint = Color.Gray)
+                Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(12.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(text = direccion.destinatario, fontSize = 13.sp, color = Color.Gray)
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Call, contentDescription = null, modifier = Modifier.size(12.dp), tint = Color.Gray)
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(text = direccion.telefono, fontSize = 13.sp, color = Color.Gray)
+                Text(text = direccion.receptor, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -428,16 +381,25 @@ fun AddressForm(
     onCancel: () -> Unit,
     pinkPrimary: Color
 ) {
-    var tag by remember { mutableStateOf(direccion?.tag ?: "") }
+    var type by remember { mutableStateOf(direccion?.nombreLugar ?: "Casa") }
     var fullAddress by remember { 
         mutableStateOf(
-            direccion?.direccion ?: if (currentLocation != "Detectando ubicación..." && !currentLocation.startsWith("Error")) currentLocation else ""
+            if (direccion != null) direccion.calle 
+            else if (currentLocation != "Detectando ubicación..." && !currentLocation.startsWith("Error")) currentLocation 
+            else ""
         ) 
     }
-    var name by remember { mutableStateOf(direccion?.destinatario ?: "") }
-    var phone by remember { mutableStateOf(direccion?.telefono ?: "") }
-    var type by remember { mutableStateOf(direccion?.tipoIcono ?: "home") }
+    
+    // Si la ubicación cambia y estamos creando una nueva, actualizar el campo
+    LaunchedEffect(currentLocation) {
+        if (direccion == null && currentLocation != "Detectando ubicación..." && !currentLocation.startsWith("Error")) {
+            fullAddress = currentLocation
+        }
+    }
+    var name by remember { mutableStateOf(direccion?.receptor ?: "") }
     var isDefault by remember { mutableStateOf(direccion?.esPredeterminada ?: false) }
+
+    val focusManager = LocalFocusManager.current
 
     Column(
         modifier = Modifier
@@ -449,48 +411,48 @@ fun AddressForm(
         Text(
             text = if (direccion == null) "Nueva Dirección" else "Editar Dirección",
             fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            TypeChip("Casa", Icons.Default.Home, type == "home", { type = "home" }, pinkPrimary)
-            TypeChip("Oficina", Icons.Default.Work, type == "work", { type = "work" }, pinkPrimary)
-            TypeChip("Depa", Icons.Default.Apartment, type == "apartment", { type = "apartment" }, pinkPrimary)
+            TypeChip("Casa", Icons.Default.Home, type == "Casa", { type = "Casa" }, pinkPrimary)
+            TypeChip("Oficina", Icons.Default.Work, type == "Oficina", { type = "Oficina" }, pinkPrimary)
+            TypeChip("Depa", Icons.Default.Apartment, type == "Depa", { type = "Depa" }, pinkPrimary)
         }
 
-        OutlinedTextField(
-            value = tag,
-            onValueChange = { tag = it },
-            label = { Text("Etiqueta (ej: Casa)") },
-            modifier = Modifier.fillMaxWidth()
-        )
         OutlinedTextField(
             value = fullAddress,
             onValueChange = { fullAddress = it },
             label = { Text("Dirección completa") },
             modifier = Modifier.fillMaxWidth(),
-            trailingIcon = {
-                IconButton(onClick = { fullAddress = currentLocation }) {
-                    Icon(Icons.Default.MyLocation, contentDescription = null, tint = pinkPrimary)
-                }
-            }
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+            )
         )
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
             label = { Text("Quién recibe") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = phone,
-            onValueChange = { phone = it },
-            label = { Text("Teléfono") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                onDone = { focusManager.clearFocus() }
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+            )
         )
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(checked = isDefault, onCheckedChange = { isDefault = it })
-            Text("Establecer como predeterminada")
+            Text("Establecer como predeterminada", color = MaterialTheme.colorScheme.onSurface)
         }
 
         Button(
@@ -498,21 +460,19 @@ fun AddressForm(
                 onSave(
                     Direccion(
                         id = direccion?.id ?: "",
-                        tag = tag,
-                        direccion = fullAddress,
-                        destinatario = name,
-                        telefono = phone,
-                        esPredeterminada = isDefault,
-                        tipoIcono = type
+                        nombreLugar = type,
+                        calle = fullAddress,
+                        receptor = name,
+                        esPredeterminada = isDefault
                     )
                 )
             },
-            enabled = tag.isNotBlank() && fullAddress.isNotBlank(),
+            enabled = fullAddress.isNotBlank(),
             modifier = Modifier.fillMaxWidth().height(56.dp),
             colors = ButtonDefaults.buttonColors(containerColor = pinkPrimary),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Text("Guardar Dirección", fontWeight = FontWeight.Bold)
+            Text("Guardar Dirección", fontWeight = FontWeight.Bold, color = Color.White)
         }
     }
 }
@@ -529,53 +489,6 @@ fun TypeChip(label: String, icon: ImageVector, isSelected: Boolean, onClick: () 
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp), tint = if (isSelected) Color.White else Color.Gray)
             Text(label, color = if (isSelected) Color.White else Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
-@Composable
-fun TarjetaCard(
-    tarjeta: Tarjeta,
-    onDelete: () -> Unit,
-    pinkPrimary: Color
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(Color.White)
-            .border(1.dp, Color.LightGray.copy(alpha = 0.2f), RoundedCornerShape(24.dp))
-            .padding(20.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(pinkPrimary.copy(alpha = 0.1f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = if (tarjeta.tipo.lowercase().contains("visa")) Icons.Default.CreditCard else Icons.Default.Payment,
-                        contentDescription = null,
-                        tint = pinkPrimary
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(text = tarjeta.numeroEnmascarado, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    Text(text = tarjeta.titular.uppercase(), fontSize = 12.sp, color = Color.Gray)
-                }
-            }
-            
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Default.DeleteSweep, contentDescription = "Eliminar", tint = Color.Gray.copy(alpha = 0.5f))
-            }
         }
     }
 }

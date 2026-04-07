@@ -28,6 +28,12 @@ class CarritoViewModel @Inject constructor(
         initialValue = false
     )
 
+    val recomendaciones = useCase.obtenerRecomendaciones().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
     init {
         viewModelScope.launch {
             useCase.obtenerCarrito().collect { items ->

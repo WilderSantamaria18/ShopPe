@@ -26,6 +26,7 @@ import com.idat.presentation.pago.PedidoConfirmadoScreen
 import com.idat.presentation.pedidos.MisPedidosScreen
 import com.idat.presentation.pedidos.DetallePedidoScreen
 import com.idat.presentation.pedidos.MisComprobantesScreen
+import com.idat.presentation.tarjetas.MisTarjetasScreen
 import com.idat.presentation.gestion.AdminComprobantesScreen
 import com.idat.presentation.components.ShopPeBottomNavBar
 import androidx.activity.compose.BackHandler
@@ -128,7 +129,9 @@ fun AppNavigation(navController: NavHostController) {
             composable("registro") { RegistroScreen(navController) }
             composable("catalogo") { CatalogoScreen(navController) }
             composable("carrito") { CarritoScreen(navController) }
-            composable("favoritos/{from}") { FavoritosScreen(navController) }
+            composable("favoritos/{from}") { backStackEntry ->
+                FavoritosScreen(navController) 
+            }
             composable("personalizacion/{from}") { PersonalizacionScreen(navController) }
             composable("configuracion/{from}") { ConfiguracionScreen(navController) }
             composable("gestion/{from}") {
@@ -158,6 +161,7 @@ fun AppNavigation(navController: NavHostController) {
             }
             composable("mis_pedidos") { MisPedidosScreen(navController) }
             composable("mis_comprobantes") { MisComprobantesScreen(navController) }
+            composable("mis_tarjetas") { MisTarjetasScreen(navController) }
             composable("direcciones") { 
                 com.idat.presentation.direcciones.MisDireccionesScreen(navController) 
             }

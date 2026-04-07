@@ -12,33 +12,32 @@ import com.idat.data.local.preferences.UserPreferencesManager
 
 // 🎨 Color definitions
 object AppColors {
+    // Brand Colors
+    val ShoppePink = Color(0xFFAB005A)
+    val ShoppePinkLight = Color(0xFFFFE8ED)
+    val ShoppePinkDark = Color(0xFFD80073)
+
     // Light theme colors
-    val LightPrimary = Color(0xFF6200EE)
-    val LightSecondary = Color(0xFF03DAC6)
-    val LightBackground = Color(0xFFF5F5F5)
+    val LightPrimary = ShoppePink
+    val LightSecondary = Color(0xFF455F88)
+    val LightBackground = Color(0xFFFDFDFD)
     val LightSurface = Color(0xFFFFFFFF)
     val LightOnPrimary = Color(0xFFFFFFFF)
-    val LightOnSecondary = Color(0xFF000000)
-    val LightOnBackground = Color(0xFF000000)
-    val LightOnSurface = Color(0xFF000000)
+    val LightOnSecondary = Color(0xFFFFFFFF)
+    val LightOnBackground = Color(0xFF1A1A1A)
+    val LightOnSurface = Color(0xFF1A1A1A)
+    val LightOutline = Color(0xFFEEEEEE)
     
     // Dark theme colors
-    val DarkPrimary = Color(0xFFBB86FC)
-    val DarkSecondary = Color(0xFF03DAC6)
+    val DarkPrimary = Color(0xFFFFB1C8) // Softer pink for Dark Mode
+    val DarkSecondary = Color(0xFFADC6FF)
     val DarkBackground = Color(0xFF121212)
     val DarkSurface = Color(0xFF1E1E1E)
-    val DarkOnPrimary = Color(0xFF000000)
-    val DarkOnSecondary = Color(0xFF000000)
-    val DarkOnBackground = Color(0xFFFFFFFF)
-    val DarkOnSurface = Color(0xFFFFFFFF)
-    
-    // Gradient colors for light theme
-    val LightGradientStart = Color(0xFF667EEA)
-    val LightGradientEnd = Color(0xFF764BA2)
-    
-    // Gradient colors for dark theme
-    val DarkGradientStart = Color(0xFF434343)
-    val DarkGradientEnd = Color(0xFF000000)
+    val DarkOnPrimary = Color(0xFF600033)
+    val DarkOnSecondary = Color(0xFF002E69)
+    val DarkOnBackground = Color(0xFFE6E1E5)
+    val DarkOnSurface = Color(0xFFE6E1E5)
+    val DarkOutline = Color(0xFF333333)
 }
 
 @Composable

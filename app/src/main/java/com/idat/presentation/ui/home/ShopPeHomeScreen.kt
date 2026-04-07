@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.idat.domain.model.Categoria
 import com.idat.domain.model.Producto
 import com.idat.presentation.components.ProductItem
 import com.idat.presentation.components.ShopPeBottomNavBar
@@ -37,11 +38,11 @@ fun ShopPeHomeScreen(
     isLoading: Boolean = true,
     viewMode: String = "grid",
     products: List<Producto> = emptyList(),
-    categorias: List<String> = emptyList(),
+    categorias: List<Categoria> = emptyList(),
     categoriaSeleccionada: String = "",
     textoBusqueda: String = "",
     onSearchTextChanged: (String) -> Unit = {},
-    onCategorySelected: (String) -> Unit = {},
+    onCategorySelected: (Categoria) -> Unit = {},
     onProductClick: (Producto) -> Unit = {},
     onProductFavorite: (Producto) -> Unit = {},
     onAddToCart: (Producto) -> Unit = {},
@@ -131,8 +132,8 @@ fun ShopPeHomeScreen(
             ) {
                 categorias.forEach { categoria ->
                     CategoryChip(
-                        text = categoria, 
-                        isSelected = categoriaSeleccionada == categoria,
+                        text = categoria.nombre, 
+                        isSelected = categoriaSeleccionada == categoria.id,
                         onClick = { onCategorySelected(categoria) },
                         surfaceContainerHigh = surfaceContainerHigh
                     )

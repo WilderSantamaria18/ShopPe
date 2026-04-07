@@ -112,18 +112,17 @@ class PedidoConfirmadoViewModel @Inject constructor(
                     // Left Column (Emitter)
                     val leftCell = Cell().setBorder(com.itextpdf.layout.borders.Border.NO_BORDER)
                     leftCell.add(Paragraph("ShopPe S.A.").setBold().setFontSize(18f))
-                    leftCell.add(Paragraph("Razón Social: ShopPe S.A."))
-                    leftCell.add(Paragraph("Domicilio Comercial: Calle ShopPe 123, Lima"))
-                    leftCell.add(Paragraph("Condición IVA: Responsable Inscripto"))
+                    leftCell.add(Paragraph("RUC: 20123456789"))
+                    leftCell.add(Paragraph("Calle ShopPe 123, San Isidro, Lima"))
                     headerTable.addCell(leftCell)
                     
                     // Right Column (Boleta Info)
                     val rightCell = Cell().setBorder(com.itextpdf.layout.borders.Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT)
-                    rightCell.add(Paragraph("BOLETA DE VENTA").setBold().setFontSize(22f))
-                    rightCell.add(Paragraph("Serie: B001  Nro. Comp: ${currentPedido.numComprobante.ifEmpty { currentPedido.id.takeLast(8).uppercase() }}"))
+                    rightCell.add(Paragraph("BOLETA DE VENTA ELECTRÓNICA").setBold().setFontSize(18f))
+                    rightCell.add(Paragraph("Serie: B001"))
+                    rightCell.add(Paragraph("Nro: ${currentPedido.numComprobante.ifEmpty { currentPedido.id.takeLast(8).uppercase() }}"))
                     val dateStr = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(currentPedido.fecha))
-                    rightCell.add(Paragraph("Fecha de Emisión: $dateStr"))
-                    rightCell.add(Paragraph("CUIT: 30-12345678-9"))
+                    rightCell.add(Paragraph("Fecha: $dateStr"))
                     headerTable.addCell(rightCell)
                     
                     document.add(headerTable)
@@ -133,14 +132,12 @@ class PedidoConfirmadoViewModel @Inject constructor(
                     document.add(Paragraph("INFORMACIÓN DEL CLIENTE").setBold().setFontSize(12f))
                     val clientTable = Table(UnitValue.createPercentArray(floatArrayOf(50f, 50f))).useAllAvailableWidth()
                     
-                    val emailText = if (currentPedido.clienteEmail.isNullOrBlank()) "No especificado" else currentPedido.clienteEmail
                     val nombreText = if (currentPedido.clienteNombre.isNullOrBlank()) "No especificado" else currentPedido.clienteNombre
+                    val dniText = if (currentPedido.dni.isNullOrBlank()) "No especificado" else currentPedido.dni
                     val direccionText = if (currentPedido.direccion.isNullOrBlank()) "No especificada" else currentPedido.direccion
 
-                    Log.d("PDF_GEN", "Datos Cliente -> Email: $emailText, Nombre: $nombreText, Dir: $direccionText")
-
-                    clientTable.addCell(Cell().add(Paragraph("Email: $emailText").setFontSize(10f)))
                     clientTable.addCell(Cell().add(Paragraph("Nombre: $nombreText").setFontSize(10f)))
+                    clientTable.addCell(Cell().add(Paragraph("DNI: $dniText").setFontSize(10f)))
                     clientTable.addCell(Cell(1, 2).add(Paragraph("Dirección de Envío: $direccionText").setFontSize(10f)))
                     document.add(clientTable)
                     document.add(Paragraph("\n"))

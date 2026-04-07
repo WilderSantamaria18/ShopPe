@@ -2,10 +2,10 @@ package com.idat.domain.model
 
 data class Direccion(
     val id: String = "",
-    val tag: String = "", // e.g., "Casa", "Oficina", "Departamento"
-    val direccion: String = "",
-    val destinatario: String = "",
-    val telefono: String = "",
+    val nombreLugar: String = "", // "Casa", "Oficina", "Depa"
+    val calle: String = "",
+    val receptor: String = "",
     val esPredeterminada: Boolean = false,
-    val tipoIcono: String = "home" // "home", "work", "apartment"
+    val latitud: Double? = null,
+    val longitud: Double? = null
 )

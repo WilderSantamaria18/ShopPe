@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.idat.domain.model.Direccion
 import com.idat.domain.model.Tarjeta
-import com.idat.domain.repository.DireccionRepository
+import com.idat.domain.repository.UsuarioRepository
 import com.idat.domain.repository.TarjetaRepository
 import android.content.Context
 import android.location.Geocoder
@@ -25,7 +25,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DireccionesViewModel @Inject constructor(
-    private val repository: DireccionRepository,
+    private val repository: UsuarioRepository,
     private val tarjetaRepository: TarjetaRepository,
     private val auth: FirebaseAuth,
     private val fusedLocationClient: FusedLocationProviderClient,
@@ -56,7 +56,7 @@ class DireccionesViewModel @Inject constructor(
     fun saveDireccion(direccion: Direccion) {
         viewModelScope.launch {
             _isLoading.value = true
-            val result = repository.saveDireccion(userId, direccion)
+            val result = repository.guardarDireccion(userId, direccion)
             if (result.isFailure) {
                 _error.value = result.exceptionOrNull()?.message
             }
@@ -67,7 +67,7 @@ class DireccionesViewModel @Inject constructor(
     fun deleteDireccion(direccionId: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            val result = repository.deleteDireccion(userId, direccionId)
+            val result = repository.eliminarDireccion(userId, direccionId)
             if (result.isFailure) {
                 _error.value = result.exceptionOrNull()?.message
             }
@@ -89,7 +89,7 @@ class DireccionesViewModel @Inject constructor(
     fun setPredeterminada(direccionId: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            val result = repository.setPredeterminada(userId, direccionId)
+            val result = repository.establecerDireccionPredeterminada(userId, direccionId)
             if (result.isFailure) {
                 _error.value = result.exceptionOrNull()?.message
             }

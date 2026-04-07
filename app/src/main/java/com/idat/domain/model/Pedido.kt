@@ -12,5 +12,6 @@ data class Pedido(
     val userId: String = "",
     val clienteEmail: String = "",
     val clienteNombre: String = "",
-    val direccion: String = ""
+    val direccion: String = "",
+    val dni: String = ""
 )

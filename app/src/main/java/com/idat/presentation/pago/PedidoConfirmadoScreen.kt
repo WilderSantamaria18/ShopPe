@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -75,47 +76,16 @@ fun PedidoConfirmadoScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.Gray)
-                    }
+                    // Botón de atrás eliminado a petición del usuario
                 },
                 actions = {
-                    IconButton(
-                        onClick = { 
-                            viewModel.generarPdf(
-                                context,
-                                onComplete = { path ->
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar("PDF guardado: $path")
-                                        viewModel.abrirComprobante(context, pedidoId)
-                                    }
-                                },
-                                onError = { error ->
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(error)
-                                    }
-                                }
-                            )
-                        },
-                        enabled = !isGeneratingPdf && pedido != null
-                    ) {
-                        if (isGeneratingPdf) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = pinkPrimary)
-                        else Icon(Icons.Default.FileDownload, contentDescription = "Descargar PDF", tint = Color.Gray)
-                    }
+                    // Se elimina el botón de descarga superior por ser redundante
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White.copy(alpha = 0.8f))
             )
         },
         bottomBar = {
-            com.idat.presentation.components.ShopPeBottomNavBar(
-                currentSelection = "Pedidos",
-                onNavigateToCatalogo = { navController.navigate("catalogo") { popUpTo(0) } },
-                onNavigateToFavoritos = { navController.navigate("favoritos/fromConf") },
-                onNavigateToCarrito = { navController.navigate("carrito") },
-                onNavigateToPedidos = { navController.navigate("mis_pedidos") },
-                onNavigateToDirecciones = { navController.navigate("direcciones") },
-                onCerrarSesion = { navController.navigate("login") { popUpTo(0) } }
-            )
+            // Se elimina la barra duplicada. El Scaffold ya tiene una lógica de navegación superior.
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
@@ -283,7 +253,12 @@ fun PedidoConfirmadoScreen(
                         }
                         Column(horizontalAlignment = Alignment.End) {
                             Text("ESTADO", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.Gray, letterSpacing = 1.sp)
-                            Text(currentPedido.estado.uppercase(), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF725000), modifier = Modifier.padding(top = 4.dp))
+                            val estadoColor = when(currentPedido.estado.uppercase()) {
+                                "PENDIENTE" -> Color(0xFFD4A017) // Dorado/Ambar
+                                "PAGADO", "COMPLETADO" -> Color(0xFF2E7D32) // Verde
+                                else -> Color(0xFF725000)
+                            }
+                            Text(currentPedido.estado.uppercase(), fontWeight = FontWeight.Black, fontSize = 14.sp, color = estadoColor, modifier = Modifier.padding(top = 4.dp))
                         }
                     }
                 }
@@ -387,20 +362,28 @@ fun PurchasedItemRow(title: String, price: String, imageUrl: String, cantidad: I
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(CircleShape)
+            .clip(RoundedCornerShape(16.dp))
             .background(Color.White)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage(
-            model = imageUrl,
-            contentDescription = title,
-            modifier = Modifier.size(60.dp).clip(CircleShape),
-            contentScale = ContentScale.Crop
-        )
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFFF5F5F5)) // Fondo suave para resaltar el producto
+                .padding(4.dp)
+        ) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = title,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit
+            )
+        }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1)
+            Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text("Unidad x $cantidad", fontSize = 12.sp, color = Color.Gray)
         }
         Text(price, fontWeight = FontWeight.Bold, fontSize = 14.sp)

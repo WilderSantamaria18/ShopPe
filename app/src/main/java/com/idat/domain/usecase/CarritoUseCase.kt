@@ -19,4 +19,6 @@ class CarritoUseCase @Inject constructor(
     suspend fun actualizarCantidad(productoId: Int, cantidad: Int) {
         repository.actualizarCantidad(productoId, cantidad)
     }
+
+    fun obtenerRecomendaciones() = repository.obtenerRecomendaciones()
 }

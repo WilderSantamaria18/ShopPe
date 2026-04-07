@@ -32,4 +32,7 @@ interface ProductoRepository {
     suspend fun eliminarDeFavoritos(productoId: Int)
     fun obtenerFavoritos(): Flow<List<Producto>>
     suspend fun esFavorito(productoId: Int): Boolean
+    
+    // Recomendaciones
+    fun obtenerRecomendaciones(): Flow<List<Producto>>
 }

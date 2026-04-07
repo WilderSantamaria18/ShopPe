@@ -31,6 +31,13 @@ class DetalleViewModel @Inject constructor(
         initialValue = false
     )
 
+    val recomendaciones: StateFlow<List<Producto>> = repository.obtenerRecomendaciones()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
     private var productoActual: Producto? = null
 
     fun cargarProducto(productoId: Int) {

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.compose.ui.res.painterResource
 import coil.compose.AsyncImage
 import com.idat.domain.model.Pedido
 import com.idat.presentation.components.ShopPeBottomNavBar
@@ -74,9 +75,8 @@ fun MisPedidosScreen(
         cargarComprobantesLocales()
     }
 
-    val pinkPrimary = Color(0xFFAB005A)
-    val pinkContainer = Color(0xFFD80073)
-    val surfaceColor = MaterialTheme.colorScheme.surface
+    val pinkPrimary = MaterialTheme.colorScheme.primary
+    val surfaceColor = MaterialTheme.colorScheme.background
     val onSurface = MaterialTheme.colorScheme.onSurface
 
     Scaffold(
@@ -237,146 +237,138 @@ fun OrderCard(
     onUpdateStatus: (String) -> Unit = {},
     onPdfGenerated: () -> Unit = {}
 ) {
-    val pinkPrimary = Color(0xFFAB005A)
-    val pinkContainer = Color(0xFFD80073)
-    val onSurfaceVariant = Color(0xFF5A3F47)
+    val pinkPrimary = MaterialTheme.colorScheme.primary
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
     
     val (statusLabel, statusBg, statusText) = when (pedido.estado.lowercase()) {
-        "entregado" -> Triple("ENTREGADO", Color(0xFFE6F4EA), Color(0xFF1E8E3E))
-        "pendiente" -> Triple("PENDIENTE", Color(0xFFFFF7E0), Color(0xFFF2994A))
-        "procesando" -> Triple("PROCESANDO", Color(0xFFFFF7E0), Color(0xFFF09300))
-        "cancelado" -> Triple("CANCELADO", Color(0xFFFFEAEA), Color(0xFFD93025))
-        else -> Triple("EN CAMINO", Color(0xFFFFE8ED), pinkPrimary)
+        "entregado" -> Triple("Entregado", Color(0xFFE8F5E9).copy(alpha = if(isSystemInDarkTheme()) 0.15f else 1f), Color(0xFF2E7D32))
+        "pendiente" -> Triple("Pendiente", Color(0xFFFFF8E1).copy(alpha = if(isSystemInDarkTheme()) 0.15f else 1f), Color(0xFFF57F17))
+        "procesando" -> Triple("Procesando", Color(0xFFE3F2FD).copy(alpha = if(isSystemInDarkTheme()) 0.15f else 1f), Color(0xFF1976D2))
+        "cancelado" -> Triple("Cancelado", Color(0xFFFFEBEE).copy(alpha = if(isSystemInDarkTheme()) 0.15f else 1f), Color(0xFFC62828))
+        else -> Triple("En Camino", Color(0xFFF3E5F5).copy(alpha = if(isSystemInDarkTheme()) 0.15f else 1f), Color(0xFF7B1FA2))
     }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(4.dp, RoundedCornerShape(32.dp), ambientColor = Color.Black.copy(alpha = 0.05f)),
-        shape = RoundedCornerShape(32.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            .clickable { navController.navigate("detalle_pedido/${pedido.id}") },
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
-            // Card Header
+        Column(modifier = Modifier.padding(20.dp)) {
+            // Header: ID and Status
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        "#SP-${pedido.id.takeLast(6).uppercase()}", 
-                        fontSize = 12.sp, 
-                        fontWeight = FontWeight.Bold, 
-                        color = Color(0xFF455F88),
-                        letterSpacing = 1.sp
-                    )
-                    Text(
-                        "Comprado el " + SimpleDateFormat("dd MMM, yyyy", Locale.getDefault()).format(Date(pedido.fecha)),
-                        fontSize = 12.sp,
-                        color = onSurfaceVariant.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
-                }
+                Text(
+                    "#SP-${pedido.id.takeLast(6).uppercase()}",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = onSurface
+                )
                 Surface(
                     color = statusBg,
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
                         statusLabel,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Black,
-                        color = statusText,
-                        letterSpacing = 0.5.sp
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = statusText
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(pedido.fecha)),
+                fontSize = 12.sp,
+                color = onSurfaceVariant,
+                modifier = Modifier.padding(top = 2.dp)
+            )
 
-            // Product Detail
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Content: Image and Info
             Row(verticalAlignment = Alignment.CenterVertically) {
                 val firstItemImage = if (pedido.items.isNotEmpty()) pedido.items[0].imagen else ""
                 Box(
                     modifier = Modifier
-                        .size(80.dp)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(Color(0xFFFFF0F2))
+                        .size(70.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
                 ) {
                     if (firstItemImage.isNotEmpty()) {
                         AsyncImage(
                             model = firstItemImage,
                             contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                            modifier = Modifier.fillMaxSize().padding(4.dp),
+                            contentScale = ContentScale.Fit
                         )
-                    } else {
-                        Icon(Icons.Default.ShoppingBag, contentDescription = null, tint = pinkPrimary, modifier = Modifier.size(32.dp).align(Alignment.Center))
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.width(16.dp))
-                
+
                 Column(modifier = Modifier.weight(1f)) {
                     val productName = if (pedido.items.isNotEmpty()) pedido.items[0].nombre else "Pedido ShopPe"
                     Text(
-                        productName, 
-                        fontWeight = FontWeight.Bold, 
-                        fontSize = 16.sp, 
-                        color = MaterialTheme.colorScheme.onSurface,
+                        productName,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        color = onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        "Cantidad: ${pedido.items.sumOf { it.cantidad }}", 
-                        fontSize = 13.sp, 
-                        color = onSurfaceVariant,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
-                    Text(
-                        "S/ ${String.format("%.2f", pedido.total)}", 
-                        fontSize = 18.sp, 
-                        fontWeight = FontWeight.ExtraBold, 
+                        "Total: S/ ${String.format("%.2f", pedido.total)}",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Black,
                         color = pinkPrimary,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Actions
-            Box(modifier = Modifier.height(1.dp).fillMaxWidth().background(Color(0xFFFFF0F2)))
             Spacer(modifier = Modifier.height(20.dp))
-            
+
+            // Actions: Main Button and Utility Icons
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Button(
                     onClick = { navController.navigate("detalle_pedido/${pedido.id}") },
-                    modifier = Modifier.weight(1f).height(52.dp),
-                    shape = RoundedCornerShape(18.dp),
+                    modifier = Modifier.weight(1f).height(48.dp),
+                    shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = pinkPrimary)
                 ) {
-                    Text("Ver detalle", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text("Detalles", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
                 }
-                
+
                 val context = LocalContext.current
-                IconButton(
+                // PDF Button
+                OutlinedIconButton(
                     onClick = {
                         pdfViewModel.generarPdfConPedido(
                             context,
                             pedido,
-                            onComplete = { 
+                            onComplete = {
                                 onPdfGenerated()
                                 scope.launch {
                                     val result = snackbarHostState.showSnackbar(
-                                        message = "Comprobante generado",
+                                        message = "PDF generado",
                                         actionLabel = "ABRIR",
-                                        duration = SnackbarDuration.Long
+                                        duration = SnackbarDuration.Short
                                     )
                                     if (result == SnackbarResult.ActionPerformed) {
                                         pdfViewModel.abrirComprobante(context, pedido.id)
@@ -386,18 +378,23 @@ fun OrderCard(
                             onError = { Toast.makeText(context, it, Toast.LENGTH_SHORT).show() }
                         )
                     },
-                    modifier = Modifier
-                        .size(52.dp)
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(Color(0xFFFFE8ED))
+                    modifier = Modifier.size(48.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
-                    Icon(Icons.Default.ReceiptLong, contentDescription = "Descargar", tint = pinkPrimary)
+                    Icon(
+                        painter = painterResource(id = com.idat.R.drawable.ic_pdf_logo),
+                        contentDescription = "PDF",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
 
-                IconButton(
+                // WhatsApp Button
+                OutlinedIconButton(
                     onClick = {
-                        val phoneNumber = "+51947837554" // Número de Yeferson
-                        val message = "Hola ShopPe, necesito ayuda con mi pedido #SP-${pedido.id.takeLast(6).uppercase()}. 🛍️"
+                        val phoneNumber = "+51947837554"
+                        val message = "Ayuda con pedido #SP-${pedido.id.takeLast(6).uppercase()}"
                         try {
                             val url = "https://api.whatsapp.com/send?phone=$phoneNumber&text=${java.net.URLEncoder.encode(message, "UTF-8")}"
                             val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
@@ -405,15 +402,19 @@ fun OrderCard(
                             }
                             context.startActivity(intent)
                         } catch (e: Exception) {
-                            Toast.makeText(context, "WhatsApp no está instalado", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "WhatsApp no instalado", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    modifier = Modifier
-                        .size(52.dp)
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(Color(0xFFE7FCEB))
+                    modifier = Modifier.size(48.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
-                    Icon(Icons.Default.Chat, contentDescription = "WhatsApp", tint = Color(0xFF25D366))
+                    Icon(
+                        painter = painterResource(id = com.idat.R.drawable.ic_whatsapp_logo),
+                        contentDescription = "WhatsApp",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
             }
         }

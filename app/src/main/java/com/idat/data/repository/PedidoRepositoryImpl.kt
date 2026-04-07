@@ -14,7 +14,34 @@ class PedidoRepositoryImpl @Inject constructor(
 ) : PedidoRepository {
 
     override suspend fun savePedido(pedido: Pedido): Result<Unit> = try {
-        firestore.collection("pedidos").document(pedido.id).set(pedido).await()
+        val batch = firestore.batch()
+        
+        // 1. Guardar en colección global pedidos
+        val pedidoRef = firestore.collection("pedidos").document(pedido.id)
+        batch.set(pedidoRef, pedido)
+        
+        // 2. Guardar copia en el historial del usuario (Redundancia para acceso rápido)
+        val userPedidoRef = firestore.collection("users").document(pedido.userId)
+            .collection("pedidos").document(pedido.id)
+        batch.set(userPedidoRef, pedido)
+        
+        // 3. Crear comprobante automáticamente
+        val comprobanteRef = firestore.collection("users").document(pedido.userId)
+            .collection("comprobantes").document(pedido.numComprobante)
+        
+        val comprobanteData = mapOf(
+            "id" to pedido.numComprobante,
+            "pedidoId" to pedido.id,
+            "fecha" to pedido.fecha,
+            "monto" to pedido.total,
+            "tipo" to "BOLETA ELECTRÓNICA",
+            "cliente" to pedido.clienteNombre,
+            "ruc_dni" to "12345678", // Podrías jalarlo del perfil
+            "estado" to "EMITIDO"
+        )
+        batch.set(comprobanteRef, comprobanteData)
+        
+        batch.commit().await()
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)

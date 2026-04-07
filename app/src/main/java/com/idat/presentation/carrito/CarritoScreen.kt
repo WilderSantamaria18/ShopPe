@@ -41,6 +41,7 @@ fun CarritoScreen(
     viewModel: CarritoViewModel = hiltViewModel()
 ) {
     val productos by viewModel.productos.collectAsState()
+    val recomendaciones by viewModel.recomendaciones.collectAsState()
     val total = productos.sumOf { it.precio * it.cantidad }
     val itemCount = productos.sumOf { it.cantidad }
     
@@ -73,7 +74,7 @@ fun CarritoScreen(
                 },
                 actions = {
                     Text(
-                        text = "$itemCount Items",
+                        text = "$itemCount Productos",
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 14.sp,
@@ -130,8 +131,6 @@ fun CarritoScreen(
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White
                                     )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Icon(Icons.Default.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                                 }
                             }
                         }
@@ -153,15 +152,17 @@ fun CarritoScreen(
                         tint = outlineColor.copy(alpha = 0.4f)
                     )
                     Text(
-                        text = "Your Bag is Empty",
+                        text = "Tu Bolsa está vacía",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "Add some curated items to your collection.",
+                        text = "Añade algunos de nuestros mejores productos a tu colección.",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 32.dp)
                     )
                 }
             }
@@ -181,13 +182,20 @@ fun CarritoScreen(
                             onEliminar = { viewModel.eliminarDelCarrito(item.id) },
                             onIncrementar = { viewModel.incrementarCantidad(item) },
                             onDecrementar = { viewModel.decrementarCantidad(item) },
-                            surfaceContainerLow = surfaceContainerLow
+                            surfaceContainerLow = surfaceContainerLow,
+                            onClick = { navController.navigate("detalle/${item.id}") }
                         )
                     }
 
-                    item {
-                        Spacer(modifier = Modifier.height(32.dp))
-                        RecommendedSetSection(surfaceContainerLow)
+                    if (recomendaciones.isNotEmpty()) {
+                        item {
+                            Spacer(modifier = Modifier.height(32.dp))
+                            RecommendedSetSection(
+                                surfaceContainerLow = surfaceContainerLow,
+                                recomendaciones = recomendaciones,
+                                onProductClick = { id -> navController.navigate("detalle/$id") }
+                            )
+                        }
                     }
                 }
 
@@ -202,10 +210,11 @@ fun ProductoCarritoItem(
     onEliminar: () -> Unit,
     onIncrementar: () -> Unit,
     onDecrementar: () -> Unit,
-    surfaceContainerLow: Color = Color.LightGray
+    surfaceContainerLow: Color = Color.LightGray,
+    onClick: () -> Unit = {}
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
         horizontalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         // Product Image
@@ -219,8 +228,8 @@ fun ProductoCarritoItem(
             AsyncImage(
                 model = item.imagen,
                 contentDescription = item.nombre,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxSize().padding(8.dp)
             )
         }
 
@@ -316,7 +325,11 @@ fun ProductoCarritoItem(
 }
 
 @Composable
-fun RecommendedSetSection(surfaceContainerLow: Color = Color.LightGray) {
+fun RecommendedSetSection(
+    surfaceContainerLow: Color = Color.LightGray,
+    recomendaciones: List<com.idat.domain.model.Producto>,
+    onProductClick: (Int) -> Unit
+) {
     Column {
         Text(
             text = "COMPLETA TU SET",
@@ -331,39 +344,51 @@ fun RecommendedSetSection(surfaceContainerLow: Color = Color.LightGray) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            RecommendedItemBento(
-                modifier = Modifier.weight(1f),
-                title = "Silk Mist Candle",
-                price = "S/ 42.00",
-                surfaceContainerLow = surfaceContainerLow
-            )
-            RecommendedItemBento(
-                modifier = Modifier.weight(1f),
-                title = "Cloud Cotton Set",
-                price = "S/ 65.00",
-                surfaceContainerLow = surfaceContainerLow
-            )
+            recomendaciones.take(2).forEach { producto ->
+                RecommendedItemBento(
+                    modifier = Modifier.weight(1f),
+                    title = producto.nombre,
+                    price = "S/ ${String.format("%.2f", producto.precio)}",
+                    imageUrl = producto.imagen,
+                    surfaceContainerLow = surfaceContainerLow,
+                    onClick = { onProductClick(producto.id) }
+                )
+            }
         }
     }
 }
 
 @Composable
-fun RecommendedItemBento(modifier: Modifier = Modifier, title: String, price: String, surfaceContainerLow: Color = Color.LightGray) {
+fun RecommendedItemBento(
+    modifier: Modifier = Modifier, 
+    title: String, 
+    price: String, 
+    imageUrl: String,
+    surfaceContainerLow: Color = Color.LightGray,
+    onClick: () -> Unit
+) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
             .background(surfaceContainerLow)
+            .clickable { onClick() }
             .padding(16.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            // Fake image holder
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            )
+                    .background(Color.White)
+            ) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = title,
+                    modifier = Modifier.fillMaxSize().padding(4.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
             Column {
                 Text(
                     text = title, 

@@ -6,6 +6,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -20,6 +24,9 @@ import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.QrCode2
+import androidx.compose.material.icons.filled.CreditCardOff
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Payment
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,8 +37,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -61,18 +72,20 @@ fun PagoScreen(
     // Validation
     val isFormValid = (if (selectedMethod == "card") {
         cardNumber.filter { it.isDigit() }.length >= 16 && 
-        expiryDate.length >= 5 && 
+        expiryDate.length >= 4 &&
         cvv.length >= 3 && 
         cardHolderName.isNotBlank()
     } else {
         true // Yape is always "valid" as it's just showing a QR
-    }) && !selectedDireccion.isNullOrBlank()
+    }) && selectedDireccion != null
 
     val isDark = MaterialTheme.colorScheme.surface == Color(0xFF140C0E)
     val surfaceContainerLow = if (isDark) Color(0xFF1F1215) else Color(0xFFFFF0F2)
     val surfaceContainerLowest = if (isDark) Color(0xFF140C0E) else Color.White
     val surfaceContainerHigh = if (isDark) Color(0xFF332025) else Color(0xFFFEE1E7)
     val outlineVariant = if (isDark) Color(0xFF8E6F77).copy(alpha = 0.5f) else Color(0xFFE2BDC6)
+
+    val focusManager = LocalFocusManager.current
 
     // Loading Simulation
     if (showLoading) {
@@ -159,7 +172,7 @@ fun PagoScreen(
                     }
                 } else {
                     direcciones.forEach { dir ->
-                        val isDirSelected = selectedDireccion == dir.direccion
+                        val isDirSelected = selectedDireccion?.id == dir.id
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -167,15 +180,15 @@ fun PagoScreen(
                                 .clip(RoundedCornerShape(20.dp))
                                 .background(if (isDirSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f) else surfaceContainerLowest)
                                 .border(1.dp, if (isDirSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent, RoundedCornerShape(20.dp))
-                                .clickable { viewModel.seleccionarDireccion(dir.direccion) }
+                                .clickable { viewModel.seleccionarDireccion(dir) }
                                 .padding(16.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                RadioButton(selected = isDirSelected, onClick = { viewModel.seleccionarDireccion(dir.direccion) })
+                                RadioButton(selected = isDirSelected, onClick = { viewModel.seleccionarDireccion(dir) })
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Column {
-                                    Text(dir.tag, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                    Text(dir.direccion, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(dir.nombreLugar, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                    Text(dir.calle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
@@ -201,8 +214,8 @@ fun PagoScreen(
                 )
 
                 PaymentMethodCard(
-                    title = "Tarjeta de Crédito/Débito",
-                    subtitle = "Visa, Mastercard, Amex",
+                    title = "Visa / Mastercard",
+                    subtitle = "Crédito o Débito",
                     icon = Icons.Default.Contactless,
                     isSelected = selectedMethod == "card",
                     onClick = { selectedMethod = "card" },
@@ -236,22 +249,15 @@ fun PagoScreen(
                             if (digits.length <= 16) cardNumber = digits
                         },
                         expiryDate, { input ->
-                            val digits = input.filter { it.isDigit() || it == '/' }
-                            if (digits.length <= 5) {
-                                // Simple MM/YY format auto-slash
-                                val formatted = if (digits.length == 2 && !expiryDate.contains("/") && input.length > expiryDate.length) {
-                                    "$digits/"
-                                } else {
-                                    digits
-                                }
-                                expiryDate = formatted
-                            }
+                            val digits = input.filter { it.isDigit() }
+                            if (digits.length <= 4) expiryDate = digits
                         },
                         cvv, { input ->
                             val digits = input.filter { it.isDigit() }
                             if (digits.length <= 3) cvv = digits
                         },
-                        cardHolderName, { cardHolderName = it }
+                        cardHolderName, { cardHolderName = it },
+                        focusManager = focusManager
                     )
                 }
 
@@ -425,7 +431,8 @@ fun CardFormArea(
     cardNumber: String, onCardNumberChange: (String) -> Unit,
     expiryDate: String, onExpiryDateChange: (String) -> Unit,
     cvv: String, onCvvChange: (String) -> Unit,
-    cardHolderName: String, onCardHolderNameChange: (String) -> Unit
+    cardHolderName: String, onCardHolderNameChange: (String) -> Unit,
+    focusManager: androidx.compose.ui.focus.FocusManager
 ) {
     Box(
         modifier = Modifier
@@ -452,8 +459,36 @@ fun CardFormArea(
                     focusedContainerColor = surfaceContainerLowest, unfocusedContainerColor = surfaceContainerLowest, unfocusedBorderColor = Color.Transparent, focusedBorderColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 shape = RoundedCornerShape(12.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) }),
+                singleLine = true,
+                visualTransformation = { text ->
+                    val trimmed = if (text.text.length >= 16) text.text.substring(0..15) else text.text
+                    var out = ""
+                    for (i in trimmed.indices) {
+                        out += trimmed[i]
+                        if (i % 4 == 3 && i != 15) out += " "
+                    }
+
+                    val offsetMapping = object : OffsetMapping {
+                        override fun originalToTransformed(offset: Int): Int {
+                            if (offset <= 3) return offset
+                            if (offset <= 7) return offset + 1
+                            if (offset <= 11) return offset + 2
+                            if (offset <= 16) return offset + 3
+                            return 19
+                        }
+
+                        override fun transformedToOriginal(offset: Int): Int {
+                            if (offset <= 4) return offset
+                            if (offset <= 9) return offset - 1
+                            if (offset <= 14) return offset - 2
+                            if (offset <= 19) return offset - 3
+                            return 16
+                        }
+                    }
+                    TransformedText(AnnotatedString(out), offsetMapping)
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -475,7 +510,31 @@ fun CardFormArea(
                         ),
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) }),
+                        visualTransformation = { text ->
+                            val trimmed = if (text.text.length >= 4) text.text.substring(0..3) else text.text
+                            var out = ""
+                            for (i in trimmed.indices) {
+                                out += trimmed[i]
+                                if (i == 1) out += "/"
+                            }
+
+                            val offsetMapping = object : OffsetMapping {
+                                override fun originalToTransformed(offset: Int): Int {
+                                    if (offset <= 1) return offset
+                                    if (offset <= 4) return offset + 1
+                                    return 5
+                                }
+
+                                override fun transformedToOriginal(offset: Int): Int {
+                                    if (offset <= 1) return offset
+                                    if (offset <= 5) return offset - 1
+                                    return 4
+                                }
+                            }
+                            TransformedText(AnnotatedString(out), offsetMapping)
+                        }
                     )
                 }
                 Column(modifier = Modifier.weight(1f)) {
@@ -494,7 +553,8 @@ fun CardFormArea(
                             focusedBorderColor = MaterialTheme.colorScheme.primaryContainer
                         ),
                         shape = RoundedCornerShape(12.dp),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                         singleLine = true
                     )
                 }
@@ -517,7 +577,8 @@ fun CardFormArea(
                 ),
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
             )
 
             Spacer(modifier = Modifier.height(16.dp))

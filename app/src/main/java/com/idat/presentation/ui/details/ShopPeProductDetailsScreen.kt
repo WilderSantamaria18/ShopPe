@@ -32,26 +32,22 @@ import com.idat.presentation.components.ProductItem
 @Composable
 fun ShopPeProductDetailsScreen(
     producto: Producto,
+    recomendaciones: List<Producto> = emptyList(),
     onBackClick: () -> Unit = {},
-    onAddToCart: () -> Unit = {}
+    onAddToCart: () -> Unit = {},
+    onProductClick: (Int) -> Unit = {}
 ) {
     var isFavorite by remember { mutableStateOf(false) }
     var selectedFinish by remember { mutableStateOf(0) }
     var selectedSize by remember { mutableStateOf(0) }
     
     val scrollState = rememberScrollState()
-    val isDark = MaterialTheme.colorScheme.surface == Color(0xFF140C0E)
+    val isDark = isSystemInDarkTheme()
     
-    val surfaceContainerLow = if (isDark) Color(0xFF1F1215) else Color(0xFFFFF0F2)
-    val surfaceContainerHigh = if (isDark) Color(0xFF332025) else Color(0xFFFEE1E7)
-    val outlineColor = if (isDark) Color(0xFFA88991) else Color(0xFF8E6F77)
-    
-    val finishColors = listOf(
-        Color(0xFFF5F5DC), // Beige/Natural
-        Color(0xFFD2B48C), // Tan
-        Color(0xFF8B4513), // SaddleBrown
-        Color(0xFF2F4F4F)  // DarkSlateGray
-    )
+    val surfaceContainerLow = if (isDark) Color(0xFF2D2D2D) else Color(0xFFFFF0F2)
+    val surfaceContainerHigh = if (isDark) Color(0xFF3D3D3D) else Color(0xFFFEE1E7)
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val pinkPrimary = Color(0xFFAB005A)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -134,7 +130,7 @@ fun ShopPeProductDetailsScreen(
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        "NEW ARRIVAL",
+                        "NUEVO INGRESO",
                         color = MaterialTheme.colorScheme.onTertiary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
@@ -143,47 +139,12 @@ fun ShopPeProductDetailsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Image Gallery (thumbnails)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Secondary images (placeholders using main image for now)
-                for (i in 0..2) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .aspectRatio(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(surfaceContainerHigh)
-                    ) {
-                        AsyncImage(
-                            model = producto.imagen,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                        if (i == 2) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("+2", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                            }
-                        }
-                    }
-                }
-            }
-
             Spacer(modifier = Modifier.height(32.dp))
 
             // Breadcrumbs
+            val categoriaLimpia = producto.categoria.replace("_", " ").uppercase()
             Text(
-                text = "CURATED COLLECTIONS / ${producto.categoria.uppercase()}",
+                text = "COLECCIONES / $categoriaLimpia",
                 color = MaterialTheme.colorScheme.secondary,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -207,18 +168,10 @@ fun ShopPeProductDetailsScreen(
             // Pricing
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
-                    text = "$${producto.precio}",
+                    text = "S/. ${String.format("%.2f", producto.precio)}",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = "$${producto.precio * 1.2}", // Just generating an old price
-                    fontSize = 18.sp,
-                    color = outlineColor,
-                    textDecoration = TextDecoration.LineThrough,
-                    modifier = Modifier.padding(bottom = 2.dp)
                 )
             }
 
@@ -233,49 +186,23 @@ fun ShopPeProductDetailsScreen(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.Eco,
                     title = "MATERIAL",
-                    subtitle = "100% Baby Alpaca",
+                    subtitle = "Premium",
                     surfaceContainerLow = surfaceContainerLow
                 )
                 FeatureBentoPanel(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.AutoAwesome,
-                    title = "QUALITY",
-                    subtitle = "Hand-loomed in Peru",
+                    title = "CALIDAD",
+                    subtitle = "Garantizada",
                     surfaceContainerLow = surfaceContainerLow
                 )
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Finish Selection
-            Text(
-                text = "SELECT FINISH",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                finishColors.forEachIndexed { index, color ->
-                    val isSelected = selectedFinish == index
-                    val strokeColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(color)
-                            .border(2.dp, strokeColor, CircleShape)
-                            .clickable { selectedFinish = index }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
             // Dimensions Selection
             Text(
-                text = "DIMENSIONS",
+                text = "DIMENSIONES",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 2.sp,
@@ -284,15 +211,9 @@ fun ShopPeProductDetailsScreen(
             Spacer(modifier = Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 DimensionButton(
-                    text = "Standard 50\" x 70\"",
+                    text = "Estándar",
                     isSelected = selectedSize == 0,
                     onClick = { selectedSize = 0 },
-                    surfaceContainerHigh = surfaceContainerHigh
-                )
-                DimensionButton(
-                    text = "Large 60\" x 90\"",
-                    isSelected = selectedSize == 1,
-                    onClick = { selectedSize = 1 },
                     surfaceContainerHigh = surfaceContainerHigh
                 )
             }
@@ -320,7 +241,7 @@ fun ShopPeProductDetailsScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Add to Bag — $${producto.precio}",
+                        text = "Añadir a la Bolsa",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -342,7 +263,7 @@ fun ShopPeProductDetailsScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Complimentary global carbon-neutral shipping",
+                    text = "Envío gratuito y neutro en carbono",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight.Medium
@@ -353,7 +274,7 @@ fun ShopPeProductDetailsScreen(
 
             // Details section
             Text(
-                text = "Product Details",
+                text = "Detalles del Producto",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -379,56 +300,45 @@ fun ShopPeProductDetailsScreen(
             ) {
                 Column {
                     Text(
-                        text = "Care Instructions",
+                        text = "Instrucciones de Cuidado",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(24.dp))
-                    CareInstructionRow(Icons.Default.DryCleaning, "Professional dry clean recommended")
+                    CareInstructionRow(Icons.Default.DryCleaning, "Se recomienda limpieza en seco profesional")
                     Spacer(modifier = Modifier.height(16.dp))
-                    CareInstructionRow(Icons.Default.Air, "Air outdoors periodically to refresh fibers")
+                    CareInstructionRow(Icons.Default.Air, "Ventilar al aire libre periódicamente")
                     Spacer(modifier = Modifier.height(16.dp))
-                    CareInstructionRow(Icons.Default.WaterDrop, "Spot clean with cold water and mild detergent")
+                    CareInstructionRow(Icons.Default.WaterDrop, "Limpiar con agua fría y detergente suave")
                 }
             }
 
             Spacer(modifier = Modifier.height(64.dp))
 
-            // Complete the look (Simulated related products)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
-            ) {
-                Text(
-                    text = "Complete the Look",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    letterSpacing = (-0.5).sp
-                )
-                Text(
-                    text = "EXPLORE ALL",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    letterSpacing = 2.sp,
-                    textDecoration = TextDecoration.Underline
-                )
-            }
+            // Complete the look (Dinámico)
+            Text(
+                text = "Completa tu Look",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                letterSpacing = (-0.5).sp
+            )
             Spacer(modifier = Modifier.height(24.dp))
 
-            // We mimic a related items row
+            // Usamos las recomendaciones reales de la base de datos
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Box(modifier = Modifier.weight(1f)) {
-                    ProductItem(producto = producto.copy(precio = 48.0, nombre = "Palo Santo Soy Candle"), showTag = false)
-                }
-                Box(modifier = Modifier.weight(1f)) {
-                    ProductItem(producto = producto.copy(precio = 85.0, nombre = "Terra Sculptural Vase"), showTag = false)
+                recomendaciones.take(2).forEach { item ->
+                    Box(modifier = Modifier.weight(1f)) {
+                        ProductItem(
+                            producto = item, 
+                            showTag = false,
+                            onClick = { onProductClick(item.id) }
+                        )
+                    }
                 }
             }
 
