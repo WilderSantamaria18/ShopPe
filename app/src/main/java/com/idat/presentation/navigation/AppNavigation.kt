@@ -28,6 +28,7 @@ import com.idat.presentation.pedidos.DetallePedidoScreen
 import com.idat.presentation.pedidos.MisComprobantesScreen
 import com.idat.presentation.tarjetas.MisTarjetasScreen
 import com.idat.presentation.gestion.AdminComprobantesScreen
+import com.idat.presentation.gestion.AdminUsuariosScreen
 import com.idat.presentation.components.ShopPeBottomNavBar
 import androidx.activity.compose.BackHandler
 import androidx.navigation.NavOptionsBuilder
@@ -147,6 +148,14 @@ fun AppNavigation(navController: NavHostController) {
                 val isAdmin = AdminAccess.isAdminEmail(FirebaseAuth.getInstance().currentUser?.email)
                 if (isAdmin) {
                     AdminComprobantesScreen(navController)
+                } else {
+                    AdminOnlyScreen(onBackToCatalog = { navController.navigate("catalogo") })
+                }
+            }
+            composable("admin_usuarios") {
+                val isAdmin = AdminAccess.isAdminEmail(FirebaseAuth.getInstance().currentUser?.email)
+                if (isAdmin) {
+                    AdminUsuariosScreen(navController)
                 } else {
                     AdminOnlyScreen(onBackToCatalog = { navController.navigate("catalogo") })
                 }

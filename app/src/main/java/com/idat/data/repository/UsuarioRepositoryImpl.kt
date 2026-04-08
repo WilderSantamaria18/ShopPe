@@ -95,4 +95,19 @@ class UsuarioRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
+
+    override fun getUsuarios(): Flow<List<Usuario>> = callbackFlow {
+        val listener = firestore.collection("users")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                val usuarios = snapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(Usuario::class.java)?.copy(uid = doc.id)
+                } ?: emptyList()
+                trySend(usuarios)
+            }
+        awaitClose { listener.remove() }
+    }
 }

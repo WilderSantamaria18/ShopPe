@@ -13,4 +13,7 @@ interface UsuarioRepository {
     suspend fun guardarDireccion(uid: String, direccion: Direccion): Result<Unit>
     suspend fun eliminarDireccion(uid: String, direccionId: String): Result<Unit>
     suspend fun establecerDireccionPredeterminada(uid: String, direccionId: String): Result<Unit>
+    
+    // Admin
+    fun getUsuarios(): Flow<List<Usuario>>
 }

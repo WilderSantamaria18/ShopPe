@@ -66,6 +66,9 @@ fun GestionProductosScreen(
                         IconButton(onClick = { navController.navigate("admin_comprobantes") }) {
                             Icon(Icons.Default.ReceiptLong, contentDescription = "Comprobantes", tint = pinkPrimary)
                         }
+                        IconButton(onClick = { navController.navigate("admin_usuarios") }) {
+                            Icon(Icons.Default.People, contentDescription = "Usuarios", tint = pinkPrimary)
+                        }
                         IconButton(onClick = { /* More options */ }) {
                             Icon(Icons.Default.MoreVert, contentDescription = "Más", tint = Color.Gray)
                         }

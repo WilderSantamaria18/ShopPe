@@ -6,6 +6,7 @@ import com.idat.domain.model.Pedido
 import com.idat.domain.repository.PedidoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -53,5 +54,11 @@ class AdminComprobantesViewModel @Inject constructor(
 
     fun onStatusFilterChange(status: String?) {
         _statusFilter.value = if (_statusFilter.value == status) null else status
+    }
+
+    fun actualizarEstadoPedido(pedidoId: String, nuevoEstado: String) {
+        viewModelScope.launch {
+            repository.updatePedidoStatus(pedidoId, nuevoEstado)
+        }
     }
 }

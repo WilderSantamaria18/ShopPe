@@ -12,5 +12,6 @@ data class Usuario(
     val departamento: String = "",
     val latitud: Double? = null,
     val longitud: Double? = null,
-    val fotoUrl: String = ""
+    val fotoUrl: String = "",
+    val rol: String = "CLIENTE"
 )

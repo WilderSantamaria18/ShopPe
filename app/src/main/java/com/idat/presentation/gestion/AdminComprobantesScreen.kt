@@ -1,5 +1,6 @@
 package com.idat.presentation.gestion
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -181,6 +182,32 @@ fun AdminComprobantesScreen(
                                         fontSize = 16.sp,
                                         color = MaterialTheme.colorScheme.primary
                                     )
+                                }
+
+                                // --- Status Selector (Admin Feature) ---
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text("Cambiar Estado:", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    val statusOptions = listOf("Pendiente", "En camino", "Entregado")
+                                    statusOptions.forEach { option ->
+                                        val isSelected = pedido.estado.equals(option, ignoreCase = true)
+                                        SuggestionChip(
+                                            onClick = { 
+                                                if (!isSelected) {
+                                                    adminViewModel.actualizarEstadoPedido(pedido.id, option)
+                                                }
+                                            },
+                                            label = { Text(option, fontSize = 10.sp) },
+                                            colors = SuggestionChipDefaults.suggestionChipColors(
+                                                containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+                                                labelColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else Color.Gray
+                                            ),
+                                            border = if (isSelected) null else BorderStroke(1.dp, Color.LightGray)
+                                        )
+                                    }
                                 }
                             }
                         }
