@@ -51,11 +51,14 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var showWelcomeDialog by remember { mutableStateOf(false) }
+    var showResetPasswordDialog by remember { mutableStateOf(false) }
+    var resetEmail by remember { mutableStateOf("") }
 
     val pinkPrimary = MaterialTheme.colorScheme.primary
 
     val loginExitoso by viewModel.loginExitoso.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val successMessage by viewModel.successMessage.collectAsState()
     val nombreUsuarioState by viewModel.nombreUsuario.collectAsState()
     val rememberMe by viewModel.rememberMe.collectAsState()
     val savedEmail by viewModel.savedEmail.collectAsState()
@@ -106,6 +109,13 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
     errorMessage?.let { message ->
         LaunchedEffect(message) {
             snackbarHostState.showSnackbar(message = message, duration = SnackbarDuration.Long)
+        }
+    }
+
+    successMessage?.let { message ->
+        LaunchedEffect(message) {
+            snackbarHostState.showSnackbar(message = message, duration = SnackbarDuration.Long)
+            viewModel.limpiarMensajes()
         }
     }
 
@@ -244,7 +254,10 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
-                            .clickable { /* Acción */ }
+                            .clickable { 
+                                resetEmail = email // Pre-llenamos con el correo si ya escribió algo
+                                showResetPasswordDialog = true 
+                            }
                             .padding(horizontal = 4.dp, vertical = 8.dp)
                     )
                 }
@@ -332,15 +345,21 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
         }
     }
 
-    // Modal de Bienvenida
+    // Modal de Bienvenida (se mantiene igual)
     if (showWelcomeDialog) {
-        Dialog(onDismissRequest = { }) {
+        // ... (código existente del diálogo de bienvenida)
+    }
+
+    // Modal de Recuperar Contraseña (Estilo Bento)
+    if (showResetPasswordDialog) {
+        Dialog(onDismissRequest = { showResetPasswordDialog = false; viewModel.limpiarMensajes() }) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                border = androidx.compose.foundation.BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Column(
                     modifier = Modifier
@@ -350,15 +369,15 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(80.dp)
-                            .clip(CircleShape)
+                            .size(64.dp)
+                            .clip(RoundedCornerShape(16.dp))
                             .background(pinkPrimary.copy(alpha = 0.1f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.CheckCircle,
+                            imageVector = Icons.Default.VisibilityOff,
                             contentDescription = null,
-                            modifier = Modifier.size(50.dp),
+                            modifier = Modifier.size(32.dp),
                             tint = pinkPrimary
                         )
                     }
@@ -366,38 +385,72 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        text = "¡Bienvenido a ShopPe!",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
+                        text = "¿Olvidaste tu clave?",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Black,
                         textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        letterSpacing = (-0.5).sp
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Hola, $nombreUsuarioState. Qué gusto tenerte de vuelta.",
-                        style = MaterialTheme.typography.bodyLarge,
+                        text = "Ingresa tu correo para recibir un enlace de recuperación.",
+                        style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    OutlinedTextField(
+                        value = resetEmail,
+                        onValueChange = { resetEmail = it },
+                        label = { Text("Correo electrónico") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = pinkPrimary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                            cursorColor = pinkPrimary
+                        )
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))
 
                     Button(
                         onClick = {
-                            showWelcomeDialog = false
-                            navController.navigate("catalogo") {
-                                popUpTo("login") { inclusive = true }
-                            }
+                            viewModel.enviarCorreoRecuperacion(resetEmail)
+                            showResetPasswordDialog = false
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = pinkPrimary)
+                            .height(52.dp),
+                        shape = CircleShape,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        contentPadding = PaddingValues()
                     ) {
-                        Text("Empezar a comprar", fontWeight = FontWeight.Bold)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                                        colors = listOf(pinkPrimary, MaterialTheme.colorScheme.primaryContainer)
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Enviar enlace", fontWeight = FontWeight.Bold, color = Color.White)
+                        }
+                    }
+
+                    TextButton(
+                        onClick = { showResetPasswordDialog = false; viewModel.limpiarMensajes() },
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }

@@ -28,6 +28,9 @@ class LoginViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
+    private val _successMessage = MutableStateFlow<String?>(null)
+    val successMessage: StateFlow<String?> = _successMessage
+
     private val _nombreUsuario = MutableStateFlow("Usuario")
     val nombreUsuario: StateFlow<String> = _nombreUsuario
 
@@ -62,6 +65,7 @@ class LoginViewModel @Inject constructor(
 
         viewModelScope.launch {
             _errorMessage.value = null
+            _successMessage.value = null
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
@@ -86,6 +90,31 @@ class LoginViewModel @Inject constructor(
                     }
                 }
         }
+    }
+
+    fun enviarCorreoRecuperacion(email: String) {
+        if (email.isBlank()) {
+            _errorMessage.value = "Ingresa tu correo para enviarte el enlace."
+            return
+        }
+        
+        viewModelScope.launch {
+            _errorMessage.value = null
+            _successMessage.value = null
+            auth.sendPasswordResetEmail(email)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        _successMessage.value = "Te hemos enviado un enlace de recuperación a tu correo."
+                    } else {
+                        _errorMessage.value = "No se pudo enviar el correo. Verifica que sea el correcto."
+                    }
+                }
+        }
+    }
+
+    fun limpiarMensajes() {
+        _errorMessage.value = null
+        _successMessage.value = null
     }
 
     fun loginWithGoogleCredential(result: SignInResult) {
