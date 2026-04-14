@@ -45,11 +45,6 @@ fun CarritoScreen(
     val total = productos.sumOf { it.precio * it.cantidad }
     val itemCount = productos.sumOf { it.cantidad }
     
-    val isDark = MaterialTheme.colorScheme.surface == Color(0xFF140C0E)
-    val outlineColor = if (isDark) Color(0xFFA88991) else Color(0xFF8E6F77)
-    val surfaceContainerLowest = if (isDark) Color(0xFF140C0E) else Color.White
-    val surfaceContainerLow = if (isDark) Color(0xFF1F1215) else Color(0xFFFFF0F2)
-
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
@@ -87,21 +82,35 @@ fun CarritoScreen(
             )
         },
         bottomBar = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
-                    .background(surfaceContainerLowest.copy(alpha = 0.95f))
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                tonalElevation = 8.dp
             ) {
                 // Fixed Bottom Action Area (Checkout Summary)
                 if (productos.isNotEmpty()) {
                     Column(
-                        modifier = Modifier.padding(start = 32.dp, end = 32.dp, top = 24.dp, bottom = 12.dp)
+                        modifier = Modifier.padding(start = 32.dp, end = 32.dp, top = 24.dp, bottom = 32.dp)
                     ) {
                         // Summary lines
-                        Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Total", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
-                            Text("S/ ${String.format("%.2f", total)}", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), 
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "Total", 
+                                fontSize = 18.sp, 
+                                fontWeight = FontWeight.ExtraBold, 
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                "S/ ${String.format("%.2f", total)}", 
+                                fontSize = 24.sp, 
+                                fontWeight = FontWeight.Black, 
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         }
 
                         // CTA Button
@@ -111,28 +120,17 @@ fun CarritoScreen(
                                 .fillMaxWidth()
                                 .height(56.dp),
                             shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                            contentPadding = PaddingValues()
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(
-                                        brush = Brush.linearGradient(
-                                            colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
-                                        )
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = "Proceder al Pago",
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
-                                    )
-                                }
-                            }
+                            Text(
+                                text = "Proceder al Pago",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }
@@ -149,7 +147,7 @@ fun CarritoScreen(
                         Icons.Default.ShoppingCart,
                         contentDescription = "Bolsa vacía",
                         modifier = Modifier.size(100.dp),
-                        tint = outlineColor.copy(alpha = 0.4f)
+                        tint = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
                     )
                     Text(
                         text = "Tu Bolsa está vacía",
@@ -182,7 +180,6 @@ fun CarritoScreen(
                             onEliminar = { viewModel.eliminarDelCarrito(item.id) },
                             onIncrementar = { viewModel.incrementarCantidad(item) },
                             onDecrementar = { viewModel.decrementarCantidad(item) },
-                            surfaceContainerLow = surfaceContainerLow,
                             onClick = { navController.navigate("detalle/${item.id}") }
                         )
                     }
@@ -191,7 +188,6 @@ fun CarritoScreen(
                         item {
                             Spacer(modifier = Modifier.height(32.dp))
                             RecommendedSetSection(
-                                surfaceContainerLow = surfaceContainerLow,
                                 recomendaciones = recomendaciones,
                                 onProductClick = { id -> navController.navigate("detalle/$id") }
                             )
@@ -210,7 +206,6 @@ fun ProductoCarritoItem(
     onEliminar: () -> Unit,
     onIncrementar: () -> Unit,
     onDecrementar: () -> Unit,
-    surfaceContainerLow: Color = Color.LightGray,
     onClick: () -> Unit = {}
 ) {
     Row(
@@ -223,7 +218,7 @@ fun ProductoCarritoItem(
                 .width(128.dp)
                 .height(160.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(surfaceContainerLow)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
                 model = item.imagen,
@@ -326,7 +321,6 @@ fun ProductoCarritoItem(
 
 @Composable
 fun RecommendedSetSection(
-    surfaceContainerLow: Color = Color.LightGray,
     recomendaciones: List<com.idat.domain.model.Producto>,
     onProductClick: (Int) -> Unit
 ) {
@@ -350,7 +344,6 @@ fun RecommendedSetSection(
                     title = producto.nombre,
                     price = "S/ ${String.format("%.2f", producto.precio)}",
                     imageUrl = producto.imagen,
-                    surfaceContainerLow = surfaceContainerLow,
                     onClick = { onProductClick(producto.id) }
                 )
             }
@@ -364,13 +357,12 @@ fun RecommendedItemBento(
     title: String, 
     price: String, 
     imageUrl: String,
-    surfaceContainerLow: Color = Color.LightGray,
     onClick: () -> Unit
 ) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(surfaceContainerLow)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .clickable { onClick() }
             .padding(16.dp)
     ) {
@@ -380,12 +372,12 @@ fun RecommendedItemBento(
                     .fillMaxWidth()
                     .aspectRatio(1f)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color.White)
+                    .background(MaterialTheme.colorScheme.surface)
             ) {
                 AsyncImage(
                     model = imageUrl,
                     contentDescription = title,
-                    modifier = Modifier.fillMaxSize().padding(4.dp),
+                    modifier = Modifier.fillMaxSize().padding(12.dp),
                     contentScale = ContentScale.Fit
                 )
             }

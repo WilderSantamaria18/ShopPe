@@ -79,11 +79,7 @@ fun PagoScreen(
         true // Yape is always "valid" as it's just showing a QR
     }) && selectedDireccion != null
 
-    val isDark = MaterialTheme.colorScheme.surface == Color(0xFF140C0E)
-    val surfaceContainerLow = if (isDark) Color(0xFF1F1215) else Color(0xFFFFF0F2)
-    val surfaceContainerLowest = if (isDark) Color(0xFF140C0E) else Color.White
-    val surfaceContainerHigh = if (isDark) Color(0xFF332025) else Color(0xFFFEE1E7)
-    val outlineVariant = if (isDark) Color(0xFF8E6F77).copy(alpha = 0.5f) else Color(0xFFE2BDC6)
+    val isDark = MaterialTheme.colorScheme.surface == Color(0xFF1E1E1E)
 
     val focusManager = LocalFocusManager.current
 
@@ -178,7 +174,7 @@ fun PagoScreen(
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp)
                                 .clip(RoundedCornerShape(20.dp))
-                                .background(if (isDirSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f) else surfaceContainerLowest)
+                                .background(if (isDirSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface)
                                 .border(1.dp, if (isDirSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent, RoundedCornerShape(20.dp))
                                 .clickable { viewModel.seleccionarDireccion(dir) }
                                 .padding(16.dp)
@@ -218,10 +214,7 @@ fun PagoScreen(
                     subtitle = "Crédito o Débito",
                     icon = Icons.Default.Contactless,
                     isSelected = selectedMethod == "card",
-                    onClick = { selectedMethod = "card" },
-                    surfaceContainerLow = surfaceContainerLow,
-                    surfaceContainerLowest = surfaceContainerLowest,
-                    outlineVariant = outlineVariant
+                    onClick = { selectedMethod = "card" }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -231,19 +224,13 @@ fun PagoScreen(
                     subtitle = "Escanea y paga al instante",
                     icon = Icons.Default.QrCode2,
                     isSelected = selectedMethod == "yape",
-                    onClick = { selectedMethod = "yape" },
-                    surfaceContainerLow = surfaceContainerLow,
-                    surfaceContainerLowest = surfaceContainerLowest,
-                    outlineVariant = outlineVariant
+                    onClick = { selectedMethod = "yape" }
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
                 AnimatedVisibility(visible = selectedMethod == "card") {
                     CardFormArea(
-                        surfaceContainerLow, 
-                        surfaceContainerLowest, 
-                        outlineVariant,
                         cardNumber, { input ->
                             val digits = input.filter { it.isDigit() }
                             if (digits.length <= 16) cardNumber = digits
@@ -262,7 +249,7 @@ fun PagoScreen(
                 }
 
                 AnimatedVisibility(visible = selectedMethod == "yape") {
-                    YapeInstructionArea(surfaceContainerHigh)
+                    YapeInstructionArea()
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -311,7 +298,7 @@ fun PagoScreen(
                         Spacer(modifier = Modifier.width(6.dp))
                         Box(modifier = Modifier.height(4.dp).width(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Box(modifier = Modifier.height(4.dp).width(32.dp).clip(CircleShape).background(outlineVariant))
+                        Box(modifier = Modifier.height(4.dp).width(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.outlineVariant))
                     }
                     
                     Spacer(modifier = Modifier.height(16.dp))
@@ -361,7 +348,7 @@ fun PagoScreen(
                 ) {
                     Card(
                         shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
                         Column(
                             modifier = Modifier.padding(32.dp),
@@ -369,7 +356,7 @@ fun PagoScreen(
                         ) {
                             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text("Procesando Pago...", fontWeight = FontWeight.Bold)
+                            Text("Procesando Pago...", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 }
@@ -381,8 +368,7 @@ fun PagoScreen(
 @Composable
 fun PaymentMethodCard(
     title: String, subtitle: String, icon: ImageVector,
-    isSelected: Boolean, onClick: () -> Unit,
-    surfaceContainerLow: Color, surfaceContainerLowest: Color, outlineVariant: Color
+    isSelected: Boolean, onClick: () -> Unit
 ) {
     val borderColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
 
@@ -390,7 +376,7 @@ fun PaymentMethodCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(32.dp))
-            .background(surfaceContainerLowest)
+            .background(MaterialTheme.colorScheme.surface)
             .border(2.dp, borderColor, RoundedCornerShape(32.dp))
             .clickable { onClick() }
             .padding(20.dp)
@@ -398,7 +384,7 @@ fun PaymentMethodCard(
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)).background(surfaceContainerLow),
+                    modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(imageVector = icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
@@ -411,7 +397,7 @@ fun PaymentMethodCard(
             }
             // Radio button custom
             Box(
-                modifier = Modifier.size(24.dp).clip(CircleShape).border(2.dp, if (isSelected) MaterialTheme.colorScheme.primaryContainer else outlineVariant, CircleShape),
+                modifier = Modifier.size(24.dp).clip(CircleShape).border(2.dp, if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.outlineVariant, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 if (isSelected) {
@@ -425,9 +411,6 @@ fun PaymentMethodCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CardFormArea(
-    surfaceContainerLow: Color, 
-    surfaceContainerLowest: Color, 
-    outlineVariant: Color,
     cardNumber: String, onCardNumberChange: (String) -> Unit,
     expiryDate: String, onExpiryDateChange: (String) -> Unit,
     cvv: String, onCvvChange: (String) -> Unit,
@@ -438,7 +421,7 @@ fun CardFormArea(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(surfaceContainerLow)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(24.dp)
     ) {
         Column {
@@ -453,10 +436,10 @@ fun CardFormArea(
             OutlinedTextField(
                 value = cardNumber,
                 onValueChange = onCardNumberChange,
-                placeholder = { Text("0000 0000 0000 0000", color = outlineVariant) },
+                placeholder = { Text("0000 0000 0000 0000", color = MaterialTheme.colorScheme.outlineVariant) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = surfaceContainerLowest, unfocusedContainerColor = surfaceContainerLowest, unfocusedBorderColor = Color.Transparent, focusedBorderColor = MaterialTheme.colorScheme.primaryContainer
+                    focusedContainerColor = MaterialTheme.colorScheme.surface, unfocusedContainerColor = MaterialTheme.colorScheme.surface, unfocusedBorderColor = Color.Transparent, focusedBorderColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 shape = RoundedCornerShape(12.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
@@ -500,11 +483,11 @@ fun CardFormArea(
                     OutlinedTextField(
                         value = expiryDate,
                         onValueChange = onExpiryDateChange,
-                        placeholder = { Text("MM/YY", color = outlineVariant) },
+                        placeholder = { Text("MM/YY", color = MaterialTheme.colorScheme.outlineVariant) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = surfaceContainerLowest,
-                            unfocusedContainerColor = surfaceContainerLowest,
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                             unfocusedBorderColor = Color.Transparent,
                             focusedBorderColor = MaterialTheme.colorScheme.primaryContainer
                         ),
@@ -543,12 +526,12 @@ fun CardFormArea(
                     OutlinedTextField(
                         value = cvv,
                         onValueChange = onCvvChange,
-                        placeholder = { Text("***", color = outlineVariant) },
+                        placeholder = { Text("***", color = MaterialTheme.colorScheme.outlineVariant) },
                         modifier = Modifier.fillMaxWidth(),
-                        trailingIcon = { Icon(Icons.Default.Help, tint = outlineVariant, contentDescription = null) },
+                        trailingIcon = { Icon(Icons.Default.Help, tint = MaterialTheme.colorScheme.outlineVariant, contentDescription = null) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = surfaceContainerLowest,
-                            unfocusedContainerColor = surfaceContainerLowest,
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                             unfocusedBorderColor = Color.Transparent,
                             focusedBorderColor = MaterialTheme.colorScheme.primaryContainer
                         ),
@@ -567,11 +550,11 @@ fun CardFormArea(
             OutlinedTextField(
                 value = cardHolderName,
                 onValueChange = onCardHolderNameChange,
-                placeholder = { Text("Ej: JUAN PEREZ", color = outlineVariant) },
+                placeholder = { Text("Ej: JUAN PEREZ", color = MaterialTheme.colorScheme.outlineVariant) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = surfaceContainerLowest,
-                    unfocusedContainerColor = surfaceContainerLowest,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                     unfocusedBorderColor = Color.Transparent,
                     focusedBorderColor = MaterialTheme.colorScheme.primaryContainer
                 ),
@@ -593,17 +576,23 @@ fun CardFormArea(
 }
 
 @Composable
-fun YapeInstructionArea(surfaceContainerHigh: Color) {
+fun YapeInstructionArea() {
+    val qrBackground = if (MaterialTheme.colorScheme.surface == Color(0xFF1E1E1E)) {
+        MaterialTheme.colorScheme.surfaceVariant
+    } else {
+        Color.White
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(surfaceContainerHigh)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(32.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Box(modifier = Modifier.size(160.dp).background(Color.White, RoundedCornerShape(16.dp)).padding(16.dp), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.size(160.dp).background(qrBackground, RoundedCornerShape(16.dp)).padding(16.dp), contentAlignment = Alignment.Center) {
                 Image(painter = painterResource(id = com.idat.R.drawable.yape_qr), contentDescription = "QR Code Yape", modifier = Modifier.fillMaxSize())
             }
             Text("Escanea el código", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)

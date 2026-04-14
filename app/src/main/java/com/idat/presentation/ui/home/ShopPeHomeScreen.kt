@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -58,10 +57,8 @@ fun ShopPeHomeScreen(
     onNavigateToDirecciones: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
 ) {
-    val isDark = MaterialTheme.colorScheme.surface == Color(0xFF140C0E)
-    val surfaceContainerLow = if (isDark) Color(0xFF1F1215) else Color(0xFFFFF0F2)
-    val surfaceContainerHigh = if (isDark) Color(0xFF332025) else Color(0xFFFEE1E7)
-    val outlineColor = if (isDark) Color(0xFFA88991) else Color(0xFF8E6F77)
+    // Usamos los colores definidos en AppTheme
+    val outlineColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -101,6 +98,7 @@ fun ShopPeHomeScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Search Bar
+            val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
             TextField(
                 value = textoBusqueda,
                 onValueChange = onSearchTextChanged,
@@ -108,12 +106,22 @@ fun ShopPeHomeScreen(
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.Search, contentDescription = "Search icon", tint = outlineColor)
                 },
+                singleLine = true,
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                    imeAction = androidx.compose.ui.text.input.ImeAction.Search
+                ),
+                keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                    onSearch = { 
+                        focusManager.clearFocus()
+                        // Aquí podrías disparar una acción de búsqueda explícita si fuera necesario
+                    }
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp)),
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = surfaceContainerLow,
-                    unfocusedContainerColor = surfaceContainerLow,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     cursorColor = MaterialTheme.colorScheme.primary
@@ -134,8 +142,7 @@ fun ShopPeHomeScreen(
                     CategoryChip(
                         text = categoria.nombre, 
                         isSelected = categoriaSeleccionada == categoria.id,
-                        onClick = { onCategorySelected(categoria) },
-                        surfaceContainerHigh = surfaceContainerHigh
+                        onClick = { onCategorySelected(categoria) }
                     )
                 }
             }
@@ -213,17 +220,29 @@ fun ShopPeHomeScreen(
 }
 
 @Composable
-fun CategoryChip(text: String, isSelected: Boolean = false, onClick: () -> Unit = {}, surfaceContainerHigh: Color = Color.LightGray) {
+fun CategoryChip(text: String, isSelected: Boolean = false, onClick: () -> Unit = {}) {
+    val containerColor = if (isSelected) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+
+    val textColor = if (isSelected) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(24.dp))
             .clickable { onClick() }
-            .background(if (isSelected) MaterialTheme.colorScheme.secondary else surfaceContainerHigh)
+            .background(containerColor)
             .padding(horizontal = 24.dp, vertical = 8.dp)
     ) {
         Text(
             text = text,
-            color = if (isSelected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSurfaceVariant,
+            color = textColor,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold
         )

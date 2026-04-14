@@ -32,12 +32,13 @@ object AppColors {
     val DarkPrimary = Color(0xFFFFB1C8) // Softer pink for Dark Mode
     val DarkSecondary = Color(0xFFADC6FF)
     val DarkBackground = Color(0xFF121212)
-    val DarkSurface = Color(0xFF1E1E1E)
+    val DarkSurface = Color(0xFF1E1E1E) // Fondo principal
+    val DarkSurfaceVariant = Color(0xFF282828) // Fondo sutil para tarjetas (poco más claro)
     val DarkOnPrimary = Color(0xFF600033)
     val DarkOnSecondary = Color(0xFF002E69)
     val DarkOnBackground = Color(0xFFE6E1E5)
     val DarkOnSurface = Color(0xFFE6E1E5)
-    val DarkOutline = Color(0xFF333333)
+    val DarkOutline = Color(0xFF444444)
 }
 
 @Composable
@@ -62,6 +63,8 @@ private val LightColorScheme = lightColorScheme(
     secondary = AppColors.LightSecondary,
     background = AppColors.LightBackground,
     surface = AppColors.LightSurface,
+    surfaceVariant = Color(0xFFFFF0F3), // Rosado Pastel Crema para contenedores
+    outlineVariant = Color(0xFFE2BDC6), // Borde suave rosado
     onPrimary = AppColors.LightOnPrimary,
     onSecondary = AppColors.LightOnSecondary,
     onBackground = AppColors.LightOnBackground,
@@ -73,10 +76,13 @@ private val DarkColorScheme = darkColorScheme(
     secondary = AppColors.DarkSecondary,
     background = AppColors.DarkBackground,
     surface = AppColors.DarkSurface,
+    surfaceVariant = Color(0xFF1A0F12), // Vino Profundo para contenedores
+    outlineVariant = Color(0xFF3D262B), // Borde suave vino
     onPrimary = AppColors.DarkOnPrimary,
     onSecondary = AppColors.DarkOnSecondary,
     onBackground = AppColors.DarkOnBackground,
-    onSurface = AppColors.DarkOnSurface
+    onSurface = AppColors.DarkOnSurface,
+    outline = AppColors.DarkOutline
 )
 
 @Composable

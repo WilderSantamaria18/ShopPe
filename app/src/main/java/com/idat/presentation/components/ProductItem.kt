@@ -1,8 +1,8 @@
 package com.idat.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -26,9 +26,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.idat.domain.model.Producto
 
-import androidx.compose.foundation.border
-import androidx.compose.foundation.isSystemInDarkTheme
-
 @Composable
 fun ProductItem(
     producto: Producto,
@@ -40,15 +37,6 @@ fun ProductItem(
     showTag: Boolean = false,
     tagText: String = "NEW IN"
 ) {
-    val isDark = MaterialTheme.colorScheme.surface == Color(0xFF140C0E)
-    
-    // Contraste dinámico según el tema
-    val imageContainerColor = if (isDark) Color(0xFF1F1215) else Color(0xFFF8F0F2)
-    val outlineColor = if (isDark) Color(0xFF442B2F) else Color(0xFFE5D1D5)
-    
-    val tertiaryFixedColor = if (isDark) Color(0xFF3C2900) else Color(0xFFFFDEA8)
-    val onTertiaryFixedColor = if (isDark) Color(0xFFFFDEA8) else Color(0xFF271900)
-
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -59,10 +47,10 @@ fun ProductItem(
                 .fillMaxWidth()
                 .aspectRatio(3f / 4f)
                 .clip(RoundedCornerShape(12.dp))
-                .background(imageContainerColor)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .border(
                     width = 0.5.dp,
-                    color = outlineColor,
+                    color = MaterialTheme.colorScheme.outlineVariant,
                     shape = RoundedCornerShape(12.dp)
                 )
         ) {
@@ -83,7 +71,7 @@ fun ProductItem(
                     .padding(8.dp)
                     .size(36.dp)
                     .background(
-                        color = (if (isDark) Color.Black else Color.White).copy(alpha = 0.7f), 
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f), 
                         shape = RoundedCornerShape(percent = 50)
                     )
             ) {
@@ -102,12 +90,12 @@ fun ProductItem(
                         .align(Alignment.BottomStart)
                         .padding(12.dp)
                         .clip(RoundedCornerShape(6.dp))
-                        .background(if (tagText.uppercase() == "LIMITED") tertiaryFixedColor else MaterialTheme.colorScheme.primaryContainer)
+                        .background(if (tagText.uppercase() == "LIMITED") MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.primaryContainer)
                         .padding(horizontal = 6.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = tagText.uppercase(),
-                        color = if (tagText.uppercase() == "LIMITED") onTertiaryFixedColor else MaterialTheme.colorScheme.onPrimary,
+                        color = if (tagText.uppercase() == "LIMITED") MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onPrimaryContainer,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.5.sp

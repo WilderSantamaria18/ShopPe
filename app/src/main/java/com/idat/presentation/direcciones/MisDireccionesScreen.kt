@@ -79,11 +79,6 @@ fun MisDireccionesScreen(
         }
     }
 
-    val isDark = isSystemInDarkTheme()
-    val surfaceContainerLow = if (isDark) Color(0xFF1F1215) else Color(0xFFFFF0F2)
-    val pinkContainer = MaterialTheme.colorScheme.primary
-    val pinkPrimary = MaterialTheme.colorScheme.primary
-
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
@@ -99,12 +94,20 @@ fun MisDireccionesScreen(
                     IconButton(onClick = { 
                         navController.popBackStack()
                     }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = pinkPrimary)
+                        Icon(
+                            Icons.Default.ArrowBack, 
+                            contentDescription = "Volver", 
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { /* More options */ }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Más", tint = Color.Gray)
+                        Icon(
+                            Icons.Default.MoreVert, 
+                            contentDescription = "Más", 
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             )
@@ -127,7 +130,7 @@ fun MisDireccionesScreen(
                         )
                         Text(
                             text = "Gestiona tus puntos de entrega para una compra más rápida.",
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp,
                             modifier = Modifier.padding(top = 8.dp)
                         )
@@ -142,17 +145,13 @@ fun MisDireccionesScreen(
                             showAddressSheet = true
                         },
                         onDelete = { direccionesViewModel.deleteDireccion(direccion.id) },
-                        onSetDefault = { direccionesViewModel.setPredeterminada(direccion.id) },
-                        pinkPrimary = pinkPrimary,
-                        pinkContainer = pinkContainer,
-                        surfaceContainerLow = surfaceContainerLow
+                        onSetDefault = { direccionesViewModel.setPredeterminada(direccion.id) }
                     )
                 }
 
                 item {
                     // Decorative Map Preview
                     MapPreviewCard(
-                        pinkPrimary = pinkPrimary,
                         currentAddress = ubicacionActual,
                         isLoading = estaCargandoUbicacion,
                         onGetLocation = {
@@ -167,7 +166,10 @@ fun MisDireccionesScreen(
             }
 
             if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = pinkPrimary)
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center), 
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
 
@@ -175,7 +177,7 @@ fun MisDireccionesScreen(
             ModalBottomSheet(
                 onDismissRequest = { showAddressSheet = false },
                 sheetState = sheetState,
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
             ) {
                 AddressForm(
@@ -185,8 +187,7 @@ fun MisDireccionesScreen(
                         direccionesViewModel.saveDireccion(it)
                         showAddressSheet = false
                     },
-                    onCancel = { showAddressSheet = false },
-                    pinkPrimary = pinkPrimary
+                    onCancel = { showAddressSheet = false }
                 )
             }
         }
@@ -203,17 +204,17 @@ fun MisDireccionesScreen(
                             selectedDireccion = null
                             showAddressSheet = true
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = pinkPrimary)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
                         Text("Sí, añadir")
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showLocationDialog = false }) {
-                        Text("Cancelar", color = Color.Gray)
+                        Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 },
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(24.dp)
             )
         }
@@ -225,10 +226,7 @@ fun AddressCard(
     direccion: Direccion,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
-    onSetDefault: () -> Unit,
-    pinkPrimary: Color,
-    pinkContainer: Color,
-    surfaceContainerLow: Color
+    onSetDefault: () -> Unit
 ) {
     val icon = when (direccion.nombreLugar) {
         "Oficina" -> Icons.Default.Work
@@ -240,10 +238,13 @@ fun AddressCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(if (direccion.esPredeterminada) MaterialTheme.colorScheme.surfaceVariant else surfaceContainerLow)
+            .background(
+                if (direccion.esPredeterminada) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f) 
+                else MaterialTheme.colorScheme.surfaceVariant
+            )
             .then(
-                if (direccion.esPredeterminada) Modifier.border(2.dp, pinkContainer.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
-                else Modifier
+                if (direccion.esPredeterminada) Modifier.border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
+                else Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(24.dp))
             )
             .clickable { onSetDefault() }
             .padding(20.dp)
@@ -259,27 +260,41 @@ fun AddressCard(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(RoundedCornerShape(16.dp))
-                            .background(if (direccion.esPredeterminada) pinkContainer else pinkContainer.copy(alpha = 0.1f)),
+                            .background(
+                                if (direccion.esPredeterminada) MaterialTheme.colorScheme.primary 
+                                else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            tint = if (direccion.esPredeterminada) Color.White else pinkPrimary
+                            tint = if (direccion.esPredeterminada) MaterialTheme.colorScheme.onPrimary 
+                                   else MaterialTheme.colorScheme.primary
                         )
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
-                        Text(text = direccion.nombreLugar, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
+                        Text(
+                            text = direccion.nombreLugar, 
+                            fontWeight = FontWeight.Bold, 
+                            fontSize = 18.sp, 
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                         if (direccion.esPredeterminada) {
                             Box(
                                 modifier = Modifier
                                     .padding(top = 4.dp)
                                     .clip(RoundedCornerShape(100.dp))
-                                    .background(pinkContainer)
+                                    .background(MaterialTheme.colorScheme.primary)
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
-                                Text("PREDETERMINADA", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black)
+                                Text(
+                                    "PREDETERMINADA", 
+                                    color = MaterialTheme.colorScheme.onPrimary, 
+                                    fontSize = 9.sp, 
+                                    fontWeight = FontWeight.Black
+                                )
                             }
                         }
                     }
@@ -287,22 +302,46 @@ fun AddressCard(
                 
                 Row {
                     IconButton(onClick = onEdit) {
-                        Icon(Icons.Default.Edit, contentDescription = "Editar", tint = pinkPrimary, modifier = Modifier.size(20.dp))
+                        Icon(
+                            Icons.Default.Edit, 
+                            contentDescription = "Editar", 
+                            tint = MaterialTheme.colorScheme.primary, 
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                     IconButton(onClick = onDelete) {
-                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), modifier = Modifier.size(20.dp))
+                        Icon(
+                            Icons.Default.Delete, 
+                            contentDescription = "Eliminar", 
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), 
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = direccion.calle, fontWeight = FontWeight.Medium, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(
+                text = direccion.calle, 
+                fontWeight = FontWeight.Medium, 
+                fontSize = 15.sp, 
+                color = MaterialTheme.colorScheme.onSurface
+            )
             
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(12.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(
+                    Icons.Default.Person, 
+                    contentDescription = null, 
+                    modifier = Modifier.size(12.dp), 
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(text = direccion.receptor, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    text = direccion.receptor, 
+                    fontSize = 13.sp, 
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -310,7 +349,6 @@ fun AddressCard(
 
 @Composable
 fun MapPreviewCard(
-    pinkPrimary: Color, 
     currentAddress: String, 
     isLoading: Boolean, 
     onGetLocation: () -> Unit
@@ -321,7 +359,7 @@ fun MapPreviewCard(
             .height(180.dp)
             .padding(top = 8.dp)
             .clip(RoundedCornerShape(32.dp))
-            .background(Color.LightGray.copy(alpha = 0.2f))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .clickable { onGetLocation() }
     ) {
         // Mock Map Image
@@ -335,7 +373,14 @@ fun MapPreviewCard(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Brush.verticalGradient(listOf(Color.Transparent, pinkPrimary.copy(alpha = 0.4f))))
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color.Transparent, 
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                        )
+                    )
+                )
         )
         Row(
             modifier = Modifier
@@ -346,7 +391,12 @@ fun MapPreviewCard(
             verticalAlignment = Alignment.Bottom
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("Tu Ubicación Actual", color = Color.White.copy(alpha = 0.8f), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    "Tu Ubicación Actual", 
+                    color = Color.White.copy(alpha = 0.8f), 
+                    fontSize = 10.sp, 
+                    fontWeight = FontWeight.Bold
+                )
                 if (isLoading) {
                     LinearProgressIndicator(
                         modifier = Modifier.width(100.dp).padding(top = 4.dp),
@@ -354,7 +404,13 @@ fun MapPreviewCard(
                         trackColor = Color.White.copy(alpha = 0.2f)
                     )
                 } else {
-                    Text(currentAddress, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 2)
+                    Text(
+                        currentAddress, 
+                        color = Color.White, 
+                        fontSize = 14.sp, 
+                        fontWeight = FontWeight.Medium, 
+                        maxLines = 2
+                    )
                 }
             }
             Box(
@@ -366,7 +422,12 @@ fun MapPreviewCard(
                     .clickable { onGetLocation() },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.MyLocation, contentDescription = null, tint = pinkPrimary, modifier = Modifier.size(18.dp))
+                Icon(
+                    Icons.Default.MyLocation, 
+                    contentDescription = null, 
+                    tint = MaterialTheme.colorScheme.primary, 
+                    modifier = Modifier.size(18.dp)
+                )
             }
         }
     }
@@ -378,8 +439,7 @@ fun AddressForm(
     direccion: Direccion?,
     currentLocation: String,
     onSave: (Direccion) -> Unit,
-    onCancel: () -> Unit,
-    pinkPrimary: Color
+    onCancel: () -> Unit
 ) {
     var type by remember { mutableStateOf(direccion?.nombreLugar ?: "Casa") }
     var fullAddress by remember { 
@@ -416,9 +476,9 @@ fun AddressForm(
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            TypeChip("Casa", Icons.Default.Home, type == "Casa", { type = "Casa" }, pinkPrimary)
-            TypeChip("Oficina", Icons.Default.Work, type == "Oficina", { type = "Oficina" }, pinkPrimary)
-            TypeChip("Depa", Icons.Default.Apartment, type == "Depa", { type = "Depa" }, pinkPrimary)
+            TypeChip("Casa", Icons.Default.Home, type == "Casa", { type = "Casa" })
+            TypeChip("Oficina", Icons.Default.Work, type == "Oficina", { type = "Oficina" })
+            TypeChip("Depa", Icons.Default.Apartment, type == "Depa", { type = "Depa" })
         }
 
         OutlinedTextField(
@@ -432,7 +492,9 @@ fun AddressForm(
             ),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
             )
         )
         OutlinedTextField(
@@ -446,12 +508,18 @@ fun AddressForm(
             ),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
             )
         )
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(checked = isDefault, onCheckedChange = { isDefault = it })
+            Checkbox(
+                checked = isDefault, 
+                onCheckedChange = { isDefault = it },
+                colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
+            )
             Text("Establecer como predeterminada", color = MaterialTheme.colorScheme.onSurface)
         }
 
@@ -469,26 +537,44 @@ fun AddressForm(
             },
             enabled = fullAddress.isNotBlank(),
             modifier = Modifier.fillMaxWidth().height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = pinkPrimary),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+            ),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Text("Guardar Dirección", fontWeight = FontWeight.Bold, color = Color.White)
+            Text("Guardar Dirección", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
         }
     }
 }
 
 @Composable
-fun TypeChip(label: String, icon: ImageVector, isSelected: Boolean, onClick: () -> Unit, pinkPrimary: Color) {
+fun TypeChip(label: String, icon: ImageVector, isSelected: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(if (isSelected) pinkPrimary else Color.LightGray.copy(alpha = 0.2f))
+            .background(
+                if (isSelected) MaterialTheme.colorScheme.primary 
+                else MaterialTheme.colorScheme.surfaceVariant
+            )
             .clickable { onClick() }
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp), tint = if (isSelected) Color.White else Color.Gray)
-            Text(label, color = if (isSelected) Color.White else Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Icon(
+                icon, 
+                contentDescription = null, 
+                modifier = Modifier.size(16.dp), 
+                tint = if (isSelected) MaterialTheme.colorScheme.onPrimary 
+                       else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                label, 
+                color = if (isSelected) MaterialTheme.colorScheme.onPrimary 
+                        else MaterialTheme.colorScheme.onSurfaceVariant, 
+                fontSize = 12.sp, 
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

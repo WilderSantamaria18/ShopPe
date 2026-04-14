@@ -33,17 +33,23 @@ fun AyudaScreen(
     val context = LocalContext.current
     val expandedFaqId by viewModel.expandedFaqId.collectAsState()
 
+    val pinkPrimary = MaterialTheme.colorScheme.primary
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Centro de Ayuda", fontWeight = FontWeight.Bold) },
+                title = { Text("Centro de Ayuda", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
                 navigationIcon = {
                     IconButton(onClick = { 
                         navController.navigate("catalogo") {
                             popUpTo("catalogo") { inclusive = true }
                         }
                     }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack, 
+                            contentDescription = "Volver",
+                            tint = pinkPrimary
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -51,7 +57,7 @@ fun AyudaScreen(
                 )
             )
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.surface
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -63,8 +69,8 @@ fun AyudaScreen(
         ) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = pinkPrimary)
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp).fillMaxWidth(),
@@ -87,7 +93,12 @@ fun AyudaScreen(
                 }
             }
 
-            Text("Contacto Rápido", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(
+                "Contacto Rápido", 
+                style = MaterialTheme.typography.titleMedium, 
+                fontWeight = FontWeight.Bold,
+                color = pinkPrimary
+            )
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 ContactCard(
@@ -95,6 +106,8 @@ fun AyudaScreen(
                     title = "Email",
                     subtitle = "yeffercastillovega24@gmail.com",
                     modifier = Modifier.weight(1f),
+                    backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                    iconColor = pinkPrimary,
                     onClick = {
                         val intent = Intent(Intent.ACTION_SENDTO).apply {
                             data = Uri.parse("mailto:yeffercastillovega24@gmail.com")
@@ -108,6 +121,8 @@ fun AyudaScreen(
                     title = "Teléfono",
                     subtitle = "947 837 554",
                     modifier = Modifier.weight(1f),
+                    backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                    iconColor = pinkPrimary,
                     onClick = {
                         val intent = Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:947837554") }
                         context.startActivity(intent)
@@ -115,7 +130,12 @@ fun AyudaScreen(
                 )
             }
 
-            Text("Preguntas Frecuentes", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(
+                "Preguntas Frecuentes", 
+                style = MaterialTheme.typography.titleMedium, 
+                fontWeight = FontWeight.Bold,
+                color = pinkPrimary
+            )
 
             // Lista de FAQs
             val faqs = listOf(
@@ -131,13 +151,15 @@ fun AyudaScreen(
                     question = faq.second,
                     answer = content,
                     isExpanded = expandedFaqId == faq.first,
-                    onToggle = { viewModel.toggleFaq(faq.first) }
+                    onToggle = { viewModel.toggleFaq(faq.first) },
+                    backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                    iconColor = pinkPrimary
                 )
             }
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Column(
@@ -175,20 +197,22 @@ fun ContactCard(
     title: String,
     subtitle: String,
     modifier: Modifier = Modifier,
+    backgroundColor: Color,
+    iconColor: Color,
     onClick: () -> Unit
 ) {
     Card(
         modifier = modifier.clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Icon(icon, contentDescription = title, modifier = Modifier.size(32.dp), tint = MaterialTheme.colorScheme.primary)
-            Text(text = title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            Icon(icon, contentDescription = title, modifier = Modifier.size(32.dp), tint = iconColor)
+            Text(text = title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), textAlign = TextAlign.Center)
         }
     }
@@ -200,12 +224,14 @@ fun FaqItem(
     question: String,
     answer: String,
     isExpanded: Boolean,
-    onToggle: () -> Unit
+    onToggle: () -> Unit,
+    backgroundColor: Color,
+    iconColor: Color
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable { onToggle() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -213,11 +239,11 @@ fun FaqItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = question, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                Text(text = question, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurface)
                 Icon(
                     imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                     contentDescription = if (isExpanded) "Contraer" else "Expandir",
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = iconColor
                 )
             }
             if (isExpanded) {

@@ -42,12 +42,9 @@ fun ShopPeProductDetailsScreen(
     var selectedSize by remember { mutableStateOf(0) }
     
     val scrollState = rememberScrollState()
-    val isDark = isSystemInDarkTheme()
     
-    val surfaceContainerLow = if (isDark) Color(0xFF2D2D2D) else Color(0xFFFFF0F2)
-    val surfaceContainerHigh = if (isDark) Color(0xFF3D3D3D) else Color(0xFFFEE1E7)
     val onSurface = MaterialTheme.colorScheme.onSurface
-    val pinkPrimary = Color(0xFFAB005A)
+    val pinkPrimary = MaterialTheme.colorScheme.primary
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -66,7 +63,7 @@ fun ShopPeProductDetailsScreen(
                         onClick = onBackClick,
                         modifier = Modifier
                             .padding(8.dp)
-                            .background(surfaceContainerHigh, shape = CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, shape = CircleShape)
                     ) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.primary)
                     }
@@ -76,7 +73,7 @@ fun ShopPeProductDetailsScreen(
                         onClick = { isFavorite = !isFavorite },
                         modifier = Modifier
                             .padding(horizontal = 4.dp)
-                            .background(surfaceContainerHigh, shape = CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, shape = CircleShape)
                     ) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder, 
@@ -88,7 +85,7 @@ fun ShopPeProductDetailsScreen(
                         onClick = { /* Share */ },
                         modifier = Modifier
                             .padding(horizontal = 4.dp)
-                            .background(surfaceContainerHigh, shape = CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, shape = CircleShape)
                     ) {
                         Icon(imageVector = Icons.Default.Share, contentDescription = "Share", tint = MaterialTheme.colorScheme.primary)
                     }
@@ -112,15 +109,18 @@ fun ShopPeProductDetailsScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(4f / 5f)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(surfaceContainerLow)
+                    .aspectRatio(1f) // Cambiado de 4f/5f a 1f para que sea cuadrado
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(24.dp))
             ) {
                 AsyncImage(
                     model = producto.imagen,
                     contentDescription = producto.nombre,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                    contentScale = ContentScale.Fit, // Cambiado de Crop a Fit para ver la imagen completa
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp) // Aumentado el padding para achicar la imagen dentro del cuadro
                 )
                 Box(
                     modifier = Modifier
@@ -186,15 +186,13 @@ fun ShopPeProductDetailsScreen(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.Eco,
                     title = "MATERIAL",
-                    subtitle = "Premium",
-                    surfaceContainerLow = surfaceContainerLow
+                    subtitle = "Premium"
                 )
                 FeatureBentoPanel(
                     modifier = Modifier.weight(1f),
                     icon = Icons.Default.AutoAwesome,
                     title = "CALIDAD",
-                    subtitle = "Garantizada",
-                    surfaceContainerLow = surfaceContainerLow
+                    subtitle = "Garantizada"
                 )
             }
 
@@ -213,8 +211,7 @@ fun ShopPeProductDetailsScreen(
                 DimensionButton(
                     text = "Estándar",
                     isSelected = selectedSize == 0,
-                    onClick = { selectedSize = 0 },
-                    surfaceContainerHigh = surfaceContainerHigh
+                    onClick = { selectedSize = 0 }
                 )
             }
 
@@ -295,7 +292,7 @@ fun ShopPeProductDetailsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(24.dp))
-                    .background(surfaceContainerLow)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
                     .padding(32.dp)
             ) {
                 Column {
@@ -352,13 +349,12 @@ fun FeatureBentoPanel(
     modifier: Modifier = Modifier,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
-    subtitle: String,
-    surfaceContainerLow: Color = Color.LightGray
+    subtitle: String
 ) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(surfaceContainerLow)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(20.dp)
     ) {
         Column {
@@ -388,10 +384,10 @@ fun FeatureBentoPanel(
 }
 
 @Composable
-fun DimensionButton(text: String, isSelected: Boolean, onClick: () -> Unit, surfaceContainerHigh: Color = Color.LightGray) {
-    val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.05f) else surfaceContainerHigh
+fun DimensionButton(text: String, isSelected: Boolean, onClick: () -> Unit) {
+    val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceVariant
     val textColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent
+    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else Color.Transparent
 
     Box(
         modifier = Modifier

@@ -60,34 +60,35 @@ fun PedidoConfirmadoScreen(
         viewModel.cargarPedido(pedidoId)
     }
 
-    val pinkPrimary = Color(0xFFAB005A)
-    val pinkContainer = Color(0xFFD80073)
-    val surfaceContainerHigh = Color(0xFFFEE1E7)
-    val surfaceContainerLow = Color(0xFFFFF0F2)
-    val onSurfaceVariant = Color(0xFF5A3F47)
-    val outlineVariant = Color(0xFFE2BDC6)
+    val pinkPrimary = MaterialTheme.colorScheme.primary
+    val pinkContainer = MaterialTheme.colorScheme.primaryContainer
+    val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+    val outlineVariant = MaterialTheme.colorScheme.outlineVariant
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        Text("ShopPe", fontWeight = FontWeight.Black, fontSize = 24.sp, letterSpacing = (-1).sp)
+                        Text(
+                            text = "ShopPe", 
+                            fontWeight = FontWeight.Black, 
+                            fontSize = 24.sp, 
+                            letterSpacing = (-1).sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 },
-                navigationIcon = {
-                    // Botón de atrás eliminado a petición del usuario
-                },
-                actions = {
-                    // Se elimina el botón de descarga superior por ser redundante
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White.copy(alpha = 0.8f))
+                navigationIcon = { },
+                actions = { },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
+                )
             )
         },
-        bottomBar = {
-            // Se elimina la barra duplicada. El Scaffold ya tiene una lógica de navegación superior.
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = MaterialTheme.colorScheme.surface
     ) { paddingValues ->
         if (pedido == null) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -111,7 +112,7 @@ fun PedidoConfirmadoScreen(
                     modifier = Modifier
                         .size(80.dp)
                         .clip(CircleShape)
-                        .background(surfaceContainerHigh),
+                        .background(surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -151,14 +152,14 @@ fun PedidoConfirmadoScreen(
                         label = "ORDEN NO.", 
                         value = "#${currentPedido.id.takeLast(6).uppercase()}", 
                         valueColor = pinkPrimary, 
-                        surfaceColor = surfaceContainerLow
+                        surfaceColor = surfaceVariant
                     )
                     OrderInfoBox(
                         modifier = Modifier.weight(1f), 
                         label = "FECHA", 
                         value = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date(currentPedido.fecha)), 
                         valueColor = MaterialTheme.colorScheme.onSurface, 
-                        surfaceColor = surfaceContainerLow
+                        surfaceColor = surfaceVariant
                     )
                 }
 
@@ -169,7 +170,8 @@ fun PedidoConfirmadoScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(24.dp))
-                        .background(surfaceContainerLow)
+                        .background(surfaceVariant)
+                        .border(0.5.dp, outlineVariant, RoundedCornerShape(24.dp))
                         .padding(20.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -177,15 +179,26 @@ fun PedidoConfirmadoScreen(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
-                                .background(Color.White),
+                                .background(MaterialTheme.colorScheme.surface),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(Icons.Default.Home, contentDescription = null, tint = pinkPrimary, modifier = Modifier.size(20.dp))
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
-                            Text("ENTREGA EN", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.Gray, letterSpacing = 1.sp)
-                            Text(currentPedido.direccion.ifEmpty { "Dirección no especificada" }, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                            Text(
+                                "ENTREGA EN", 
+                                fontSize = 10.sp, 
+                                fontWeight = FontWeight.Bold, 
+                                color = onSurfaceVariant.copy(alpha = 0.6f), 
+                                letterSpacing = 1.sp
+                            )
+                            Text(
+                                currentPedido.direccion.ifEmpty { "Dirección no especificada" }, 
+                                fontWeight = FontWeight.Bold, 
+                                fontSize = 14.sp, 
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                     }
                 }
@@ -221,7 +234,8 @@ fun PedidoConfirmadoScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(32.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .border(0.5.dp, outlineVariant, RoundedCornerShape(32.dp))
                         .padding(24.dp)
                 ) {
                     val subtotal = currentPedido.total / 1.18
@@ -234,8 +248,18 @@ fun PedidoConfirmadoScreen(
                     HorizontalDivider(color = outlineVariant.copy(alpha = 0.2f))
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-                        Text("Total Pago", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
-                        Text("S/ ${String.format("%.2f", currentPedido.total)}", fontWeight = FontWeight.Black, fontSize = 24.sp, color = pinkPrimary)
+                        Text(
+                            "Total Pago", 
+                            fontWeight = FontWeight.ExtraBold, 
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            "S/ ${String.format("%.2f", currentPedido.total)}", 
+                            fontWeight = FontWeight.Black, 
+                            fontSize = 24.sp, 
+                            color = pinkPrimary
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -244,21 +268,38 @@ fun PedidoConfirmadoScreen(
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Column {
-                            Text("METODO DE PAGO", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.Gray, letterSpacing = 1.sp)
+                            Text(
+                                "METODO DE PAGO", 
+                                fontSize = 10.sp, 
+                                fontWeight = FontWeight.Bold, 
+                                color = onSurfaceVariant.copy(alpha = 0.6f), 
+                                letterSpacing = 1.sp
+                            )
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
-                                Icon(Icons.Default.CreditCard, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color(0xFF455F88))
+                                Icon(Icons.Default.CreditCard, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.secondary)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Tarjeta de Crédito", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text(
+                                    "Tarjeta de Crédito", 
+                                    fontWeight = FontWeight.Bold, 
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
                             }
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            Text("ESTADO", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.Gray, letterSpacing = 1.sp)
-                            val estadoColor = when(currentPedido.estado.uppercase()) {
-                                "PENDIENTE" -> Color(0xFFD4A017) // Dorado/Ambar
-                                "PAGADO", "COMPLETADO" -> Color(0xFF2E7D32) // Verde
-                                else -> Color(0xFF725000)
+                            Text(
+                                "ESTADO", 
+                                fontSize = 10.sp, 
+                                fontWeight = FontWeight.Bold, 
+                                color = onSurfaceVariant.copy(alpha = 0.6f), 
+                                letterSpacing = 1.sp
+                            )
+                            val (estadoText, estadoColor) = when(currentPedido.estado.uppercase()) {
+                                "PENDIENTE" -> Pair(currentPedido.estado.uppercase(), MaterialTheme.colorScheme.tertiary)
+                                "PAGADO", "COMPLETADO" -> Pair(currentPedido.estado.uppercase(), Color(0xFF4CAF50))
+                                else -> Pair(currentPedido.estado.uppercase(), pinkPrimary)
                             }
-                            Text(currentPedido.estado.uppercase(), fontWeight = FontWeight.Black, fontSize = 14.sp, color = estadoColor, modifier = Modifier.padding(top = 4.dp))
+                            Text(estadoText, fontWeight = FontWeight.Black, fontSize = 14.sp, color = estadoColor, modifier = Modifier.padding(top = 4.dp))
                         }
                     }
                 }
@@ -310,7 +351,7 @@ fun PedidoConfirmadoScreen(
                     onClick = { navController.navigate("catalogo") { popUpTo("catalogo") { inclusive = true } } },
                     modifier = Modifier.fillMaxWidth().height(60.dp),
                     shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF8DBE2))
+                    colors = ButtonDefaults.buttonColors(containerColor = surfaceVariant)
                 ) {
                     Text("Volver a la Tienda", color = pinkPrimary, fontWeight = FontWeight.Bold)
                 }
@@ -349,10 +390,17 @@ fun OrderInfoBox(modifier: Modifier, label: String, value: String, valueColor: C
         modifier = modifier
             .clip(CircleShape)
             .background(surfaceColor)
+            .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
             .padding(vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.Gray, letterSpacing = 1.sp)
+        Text(
+            text = label, 
+            fontSize = 10.sp, 
+            fontWeight = FontWeight.Bold, 
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), 
+            letterSpacing = 1.sp
+        )
         Text(value, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = valueColor)
     }
 }
@@ -362,8 +410,9 @@ fun PurchasedItemRow(title: String, price: String, imageUrl: String, cantidad: I
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color.White)
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(20.dp))
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -371,8 +420,8 @@ fun PurchasedItemRow(title: String, price: String, imageUrl: String, cantidad: I
             modifier = Modifier
                 .size(64.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFFF5F5F5)) // Fondo suave para resaltar el producto
-                .padding(4.dp)
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(6.dp)
         ) {
             AsyncImage(
                 model = imageUrl,
@@ -383,10 +432,26 @@ fun PurchasedItemRow(title: String, price: String, imageUrl: String, cantidad: I
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Text("Unidad x $cantidad", fontSize = 12.sp, color = Color.Gray)
+            Text(
+                text = title, 
+                fontWeight = FontWeight.Bold, 
+                fontSize = 14.sp, 
+                maxLines = 2, 
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = "Unidad x $cantidad", 
+                fontSize = 12.sp, 
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            )
         }
-        Text(price, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+        Text(
+            text = price, 
+            fontWeight = FontWeight.Black, 
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 

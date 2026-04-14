@@ -47,12 +47,10 @@ fun FavoritosScreen(
     val productos by viewModel.favoritos.collectAsState()
     val recomendaciones by viewModel.recomendaciones.collectAsState()
     
-    // Usamos los colores del sistema para que respete el Tema Oscuro
-    val pinkPrimary = Color(0xFFAB005A)
-    val pinkContainer = Color(0xFFD80073)
-    val surfaceColor = MaterialTheme.colorScheme.surface
+    // Usamos los colores del sistema definidos en AppTheme
+    val pinkPrimary = MaterialTheme.colorScheme.primary
     val onSurface = MaterialTheme.colorScheme.onSurface
-    val surfaceContainerLow = MaterialTheme.colorScheme.surfaceContainerLow
+    val surfaceColor = MaterialTheme.colorScheme.surface
 
     Scaffold(
         containerColor = surfaceColor,
@@ -159,25 +157,20 @@ fun FavoritoCard(
     onAddToCart: () -> Unit,
     onClick: () -> Unit
 ) {
-    val pinkPrimary = Color(0xFFAB005A)
-    val pinkContainer = Color(0xFFD80073)
+    val pinkPrimary = MaterialTheme.colorScheme.primary
+    val pinkContainer = MaterialTheme.colorScheme.primaryContainer
     val onSurface = MaterialTheme.colorScheme.onSurface
     
-    // Sincronizado con ProductItem.kt
-    val isDark = MaterialTheme.colorScheme.surface == Color(0xFF140C0E)
-    val imageContainerColor = if (isDark) Color(0xFF1F1215) else Color(0xFFF8F0F2)
-    val outlineColor = if (isDark) Color(0xFF442B2F) else Color(0xFFE5D1D5)
-
     Column(modifier = Modifier.fillMaxWidth().clickable { onClick() }) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(3f / 4f)
                 .clip(RoundedCornerShape(24.dp))
-                .background(imageContainerColor)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .border(
                     width = 0.5.dp,
-                    color = outlineColor,
+                    color = MaterialTheme.colorScheme.outlineVariant,
                     shape = RoundedCornerShape(24.dp)
                 )
         ) {
@@ -195,7 +188,7 @@ fun FavoritoCard(
                     .padding(12.dp)
                     .size(36.dp)
                     .background(
-                        color = (if (isDark) Color.Black else Color.White).copy(alpha = 0.7f),
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
                         shape = CircleShape
                     )
             ) {
@@ -255,20 +248,15 @@ fun FavoritoCard(
 
 @Composable
 fun RecommendationCard(title: String, price: String, imageUrl: String, onClick: () -> Unit) {
-    val pinkPrimary = Color(0xFFAB005A)
+    val pinkPrimary = MaterialTheme.colorScheme.primary
     val onSurface = MaterialTheme.colorScheme.onSurface
-    
-    // Sincronizado con ProductItem.kt
-    val isDark = MaterialTheme.colorScheme.surface == Color(0xFF140C0E)
-    val containerColor = if (isDark) Color(0xFF1F1215) else Color(0xFFF8F0F2)
-    val outlineColor = if (isDark) Color(0xFF442B2F) else Color(0xFFE5D1D5)
 
     Row(
         modifier = Modifier
             .width(280.dp)
             .clip(RoundedCornerShape(24.dp))
-            .background(containerColor)
-            .border(0.5.dp, outlineColor, RoundedCornerShape(24.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(24.dp))
             .clickable { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -279,7 +267,7 @@ fun RecommendationCard(title: String, price: String, imageUrl: String, onClick: 
             modifier = Modifier
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(if(isDark) Color(0xFF2D2D2D) else Color.White)
+                .background(MaterialTheme.colorScheme.surface)
                 .padding(8.dp),
             contentScale = ContentScale.Fit
         )
@@ -304,7 +292,7 @@ fun RecommendationCard(title: String, price: String, imageUrl: String, onClick: 
                 "DESCUBRIR",
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
-                color = if(isDark) Color(0xFF86A9E0) else Color(0xFF455F88),
+                color = MaterialTheme.colorScheme.secondary,
                 letterSpacing = 1.sp,
                 modifier = Modifier.padding(top = 4.dp)
             )

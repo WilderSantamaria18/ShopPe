@@ -55,6 +55,8 @@ fun RegistroScreen(
     var confirmarPasswordVisible by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
 
+    val pinkPrimary = MaterialTheme.colorScheme.primary
+
     val registroExitoso by viewModel.registroExitoso.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val context = LocalContext.current
@@ -168,9 +170,9 @@ fun RegistroScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Next) }),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedBorderColor = pinkPrimary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                            cursorColor = MaterialTheme.colorScheme.primary,
+                            cursorColor = pinkPrimary,
                             focusedTextColor = MaterialTheme.colorScheme.onBackground,
                             unfocusedTextColor = MaterialTheme.colorScheme.onBackground
                         )
@@ -207,9 +209,9 @@ fun RegistroScreen(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedBorderColor = pinkPrimary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                            cursorColor = MaterialTheme.colorScheme.primary,
+                            cursorColor = pinkPrimary,
                             focusedTextColor = MaterialTheme.colorScheme.onBackground,
                             unfocusedTextColor = MaterialTheme.colorScheme.onBackground
                         )
@@ -251,9 +253,9 @@ fun RegistroScreen(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedBorderColor = pinkPrimary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                            cursorColor = MaterialTheme.colorScheme.primary,
+                            cursorColor = pinkPrimary,
                             focusedTextColor = MaterialTheme.colorScheme.onBackground,
                             unfocusedTextColor = MaterialTheme.colorScheme.onBackground
                         )
@@ -269,7 +271,7 @@ fun RegistroScreen(
                         Checkbox(
                             checked = aceptaTerminos,
                             onCheckedChange = { aceptaTerminos = it },
-                            colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.secondary)
+                            colors = CheckboxDefaults.colors(checkedColor = pinkPrimary)
                         )
                         Text(
                             text = "Acepto los Términos y Condiciones y la Política de Privacidad.",
@@ -296,9 +298,9 @@ fun RegistroScreen(
                         enabled = aceptaTerminos, // Deshabilitar si no acepta términos
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondary,
-                            contentColor = MaterialTheme.colorScheme.onSecondary,
-                            disabledContainerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+                            containerColor = pinkPrimary,
+                            contentColor = Color.White,
+                            disabledContainerColor = pinkPrimary.copy(alpha = 0.5f)
                         )
                     ) {
                         Text("Registrarse", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
@@ -364,7 +366,7 @@ fun RegistroScreen(
                             Text(
                                 text = "Inicia sesión",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.secondary
+                                color = pinkPrimary
                             )
                         }
                     }
@@ -381,7 +383,7 @@ fun RegistroScreen(
                     .fillMaxWidth()
                     .padding(16.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Column(
                     modifier = Modifier
@@ -393,14 +395,14 @@ fun RegistroScreen(
                         modifier = Modifier
                             .size(80.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFAB005A).copy(alpha = 0.1f)),
+                            .background(pinkPrimary.copy(alpha = 0.1f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = null,
                             modifier = Modifier.size(50.dp),
-                            tint = Color(0xFFAB005A)
+                            tint = pinkPrimary
                         )
                     }
 
@@ -436,7 +438,7 @@ fun RegistroScreen(
                             .fillMaxWidth()
                             .height(50.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFAB005A))
+                        colors = ButtonDefaults.buttonColors(containerColor = pinkPrimary)
                     ) {
                         Text("Empezar a comprar", fontWeight = FontWeight.Bold)
                     }

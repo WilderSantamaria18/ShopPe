@@ -200,12 +200,12 @@ fun MisPedidosScreen(
                             "Comprobantes Guardados",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = Color(0xFF27171C)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             "Archivos PDF guardados en este dispositivo.",
                             fontSize = 12.sp,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -217,8 +217,7 @@ fun MisPedidosScreen(
                         onDelete = { 
                             archivo.delete()
                             cargarComprobantesLocales()
-                        },
-                        pinkPrimary = pinkPrimary
+                        }
                     )
                 }
             }
@@ -242,11 +241,11 @@ fun OrderCard(
     val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
     
     val (statusLabel, statusBg, statusText) = when (pedido.estado.lowercase()) {
-        "entregado" -> Triple("Entregado", Color(0xFFE8F5E9).copy(alpha = if(isSystemInDarkTheme()) 0.15f else 1f), Color(0xFF2E7D32))
-        "pendiente" -> Triple("Pendiente", Color(0xFFFFF8E1).copy(alpha = if(isSystemInDarkTheme()) 0.15f else 1f), Color(0xFFF57F17))
-        "procesando" -> Triple("Procesando", Color(0xFFE3F2FD).copy(alpha = if(isSystemInDarkTheme()) 0.15f else 1f), Color(0xFF1976D2))
-        "cancelado" -> Triple("Cancelado", Color(0xFFFFEBEE).copy(alpha = if(isSystemInDarkTheme()) 0.15f else 1f), Color(0xFFC62828))
-        else -> Triple("En Camino", Color(0xFFF3E5F5).copy(alpha = if(isSystemInDarkTheme()) 0.15f else 1f), Color(0xFF7B1FA2))
+        "entregado" -> Triple("Entregado", MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f), MaterialTheme.colorScheme.primary)
+        "pendiente" -> Triple("Pendiente", MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.2f), MaterialTheme.colorScheme.secondary)
+        "procesando" -> Triple("Procesando", MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.2f), MaterialTheme.colorScheme.tertiary)
+        "cancelado" -> Triple("Cancelado", MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f), MaterialTheme.colorScheme.error)
+        else -> Triple("En Camino", MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f), MaterialTheme.colorScheme.primary)
     }
 
     Card(
@@ -255,10 +254,10 @@ fun OrderCard(
             .clickable { navController.navigate("detalle_pedido/${pedido.id}") },
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             // Header: ID and Status
@@ -425,17 +424,20 @@ fun OrderCard(
 fun LocalReceiptCard(
     file: File,
     onOpen: () -> Unit,
-    onDelete: () -> Unit,
-    pinkPrimary: Color
+    onDelete: () -> Unit
 ) {
+    val pinkPrimary = MaterialTheme.colorScheme.primary
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(Color.White),
+            .fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -457,19 +459,20 @@ fun LocalReceiptCard(
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    color = onSurface
                 )
                 Text(
                     text = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date(file.lastModified())),
                     fontSize = 11.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             IconButton(onClick = onOpen) {
                 Icon(Icons.Default.OpenInNew, contentDescription = "Abrir", tint = pinkPrimary)
             }
             IconButton(onClick = onDelete) {
-                Icon(Icons.Default.DeleteOutline, contentDescription = "Eliminar", tint = Color.Gray)
+                Icon(Icons.Default.DeleteOutline, contentDescription = "Eliminar", tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -478,7 +481,7 @@ fun LocalReceiptCard(
 @Composable
 fun FilterTabs(selected: String, onSelect: (String) -> Unit) {
     val filters = listOf("Todos", "Pendiente", "Entregado")
-    val pinkPrimary = Color(0xFFAB005A)
+    val pinkPrimary = MaterialTheme.colorScheme.primary
     LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
         items(filters) { filter ->
             val isSelected = filter == selected
@@ -489,7 +492,7 @@ fun FilterTabs(selected: String, onSelect: (String) -> Unit) {
                     .clickable { onSelect(filter) }
                     .padding(horizontal = 24.dp, vertical = 10.dp)
             ) {
-                Text(filter, fontSize = 14.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium, color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(filter, fontSize = 14.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium, color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -497,35 +500,94 @@ fun FilterTabs(selected: String, onSelect: (String) -> Unit) {
 
 @Composable
 fun PurchaseSummarySection(totalMes: Double, pedidosAnio: String, puntosShoppe: String) {
-    val pinkPrimary = Color(0xFFAB005A)
-    val pinkContainer = Color(0xFFD80073)
+    val pinkPrimary = MaterialTheme.colorScheme.primary
+    val pinkContainer = MaterialTheme.colorScheme.primaryContainer
     Column(modifier = Modifier.fillMaxWidth()) {
         Text("Resumen de Compras", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(bottom = 20.dp))
-        Box(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(32.dp)).background(Brush.linearGradient(listOf(pinkPrimary, pinkContainer))).padding(28.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(32.dp))
+                .background(
+                    Brush.linearGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.primary, 
+                            MaterialTheme.colorScheme.secondary
+                        )
+                    )
+                )
+                .padding(28.dp)
+        ) {
             Column {
-                Text("GASTO TOTAL DEL MES", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.7f), letterSpacing = 1.5.sp)
-                Text("S/ ${String.format("%.2f", totalMes)}", fontSize = 36.sp, fontWeight = FontWeight.Black, color = Color.White)
+                Text(
+                    "GASTO TOTAL DEL MES", 
+                    fontSize = 11.sp, 
+                    fontWeight = FontWeight.Bold, 
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f), 
+                    letterSpacing = 1.5.sp
+                )
+                Text(
+                    "S/ ${String.format("%.2f", totalMes)}", 
+                    fontSize = 36.sp, 
+                    fontWeight = FontWeight.Black, 
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
                 Spacer(modifier = Modifier.height(20.dp))
-                Surface(color = Color.White.copy(alpha = 0.2f), shape = CircleShape) {
-                    Row(modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.TrendingUp, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f), 
+                    shape = CircleShape
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp), 
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.TrendingUp, 
+                            contentDescription = null, 
+                            tint = MaterialTheme.colorScheme.onPrimary, 
+                            modifier = Modifier.size(14.dp)
+                        )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text(if (totalMes > 0) "Activo este mes" else "Sin actividad", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(
+                            if (totalMes > 0) "Activo este mes" else "Sin actividad", 
+                            fontSize = 11.sp, 
+                            fontWeight = FontWeight.Bold, 
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 }
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            StatBox(modifier = Modifier.weight(1f), label = "PEDIDOS ESTE AÑO", value = pedidosAnio, icon = Icons.Default.ShoppingBasket, iconColor = pinkPrimary)
-            StatBox(modifier = Modifier.weight(1f), label = "PUNTOS SHOPPE", value = puntosShoppe, icon = Icons.Default.Loyalty, iconColor = Color(0xFF725000))
+            StatBox(
+                modifier = Modifier.weight(1f), 
+                label = "PEDIDOS ESTE AÑO", 
+                value = pedidosAnio, 
+                icon = Icons.Default.ShoppingBasket, 
+                iconColor = MaterialTheme.colorScheme.primary
+            )
+            StatBox(
+                modifier = Modifier.weight(1f), 
+                label = "PUNTOS SHOPPE", 
+                value = puntosShoppe, 
+                icon = Icons.Default.Loyalty, 
+                iconColor = MaterialTheme.colorScheme.tertiary
+            )
         }
     }
 }
 
 @Composable
 fun StatBox(modifier: Modifier, label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector, iconColor: Color) {
-    Column(modifier = modifier.clip(RoundedCornerShape(32.dp)).background(MaterialTheme.colorScheme.surfaceVariant).border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(32.dp)).padding(24.dp), verticalArrangement = Arrangement.SpaceBetween) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(32.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(32.dp))
+            .padding(24.dp), 
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
         Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(24.dp))
         Spacer(modifier = Modifier.height(12.dp))
         Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant, letterSpacing = 1.sp)

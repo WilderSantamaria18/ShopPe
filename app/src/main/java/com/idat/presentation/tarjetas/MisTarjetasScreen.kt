@@ -30,24 +30,27 @@ fun MisTarjetasScreen(
     viewModel: DireccionesViewModel = hiltViewModel()
 ) {
     val tarjetas by viewModel.tarjetas.collectAsState()
+    
     val pinkPrimary = MaterialTheme.colorScheme.primary
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Métodos de Pago", fontWeight = FontWeight.Bold) },
+                title = { Text("Métodos de Pago", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = pinkPrimary)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
+        containerColor = MaterialTheme.colorScheme.surface,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { /* Implementar diálogo para añadir tarjeta */ },
                 containerColor = pinkPrimary,
-                contentColor = Color.White,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Añadir Tarjeta")
@@ -64,12 +67,13 @@ fun MisTarjetasScreen(
                 text = "Tus Tarjetas Guardadas",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Black,
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier.padding(vertical = 16.dp),
+                color = MaterialTheme.colorScheme.onSurface
             )
             
             Text(
                 text = "Estas son las tarjetas que has usado en tus compras anteriores. Puedes gestionarlas aquí.",
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
@@ -81,10 +85,10 @@ fun MisTarjetasScreen(
                             imageVector = Icons.Default.CreditCardOff, 
                             contentDescription = null, 
                             modifier = Modifier.size(64.dp), 
-                            tint = Color.LightGray
+                            tint = pinkPrimary.copy(alpha = 0.3f)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("No tienes tarjetas guardadas", color = Color.Gray)
+                        Text("No tienes tarjetas guardadas", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             } else {
@@ -95,8 +99,7 @@ fun MisTarjetasScreen(
                     items(tarjetas) { tarjeta ->
                         TarjetaItem(
                             tarjeta = tarjeta,
-                            onDelete = { viewModel.deleteTarjeta(tarjeta.id) },
-                            pinkPrimary = pinkPrimary
+                            onDelete = { viewModel.deleteTarjeta(tarjeta.id) }
                         )
                     }
                 }
@@ -108,19 +111,15 @@ fun MisTarjetasScreen(
 @Composable
 fun TarjetaItem(
     tarjeta: Tarjeta,
-    onDelete: () -> Unit,
-    pinkPrimary: Color
+    onDelete: () -> Unit
 ) {
-    val isDark = MaterialTheme.colorScheme.surface == Color(0xFF140C0E)
-    val containerColor = if (isDark) Color(0xFF1F1215) else Color.White
-    val outlineColor = if (isDark) Color(0xFF442B2F) else Color(0xFFE5D1D5)
-
+    val pinkPrimary = MaterialTheme.colorScheme.primary
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(containerColor)
-            .border(1.dp, outlineColor, RoundedCornerShape(24.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(24.dp))
             .padding(20.dp)
     ) {
         Row(
@@ -153,7 +152,7 @@ fun TarjetaItem(
                     Text(
                         text = tarjeta.titular.uppercase(), 
                         fontSize = 12.sp, 
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

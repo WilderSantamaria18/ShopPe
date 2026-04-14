@@ -38,6 +38,22 @@
           }
         },
         {
+          "client_id": "663208236763-8dgvls6fqkf0uu8t3eib6spj9o6e7gqs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.idat.tiendonline",
+            "certificate_hash": "bbc72ef4eab9caa297b175fe4575367edeac9705"
+          }
+        },
+        {
+          "client_id": "663208236763-ac5afj98noqtnbcbng130biomdn51n3m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.idat.tiendonline",
+            "certificate_hash": "03ed88f1731d70266c8086b9aca8ca8c458b0767"
+          }
+        },
+        {
           "client_id": "663208236763-ooknq4ajtkj3bkrknien9q52lf3p9utm.apps.googleusercontent.com",
           "client_type": 3
         }

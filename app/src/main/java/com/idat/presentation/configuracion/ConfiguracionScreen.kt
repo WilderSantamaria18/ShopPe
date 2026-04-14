@@ -63,6 +63,8 @@ fun ConfiguracionScreen(
     val isLoadingLocation by viewModel.isLoadingLocation.collectAsState()
     val ubicacionDetectada by viewModel.ubicacionDetectada.collectAsState()
     
+    val pinkPrimary = MaterialTheme.colorScheme.primary
+
     val snackbarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
 
@@ -143,7 +145,7 @@ fun ConfiguracionScreen(
                     IconButton(onClick = {
                         viewModel.guardarPerfil(nombre, apellido, dni, telefono, direccion, distrito, departamento)
                     }) {
-                        Icon(Icons.Default.Save, contentDescription = "Guardar", tint = Color(0xFFAB005A))
+                        Icon(Icons.Default.Save, contentDescription = "Guardar", tint = pinkPrimary)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -151,7 +153,7 @@ fun ConfiguracionScreen(
                 )
             )
         },
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = MaterialTheme.colorScheme.surface,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
         Column(
@@ -192,14 +194,14 @@ fun ConfiguracionScreen(
                             modifier = Modifier
                                 .size(100.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFAB005A).copy(alpha = 0.1f)),
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = if (nombre.isNotEmpty()) nombre.take(1).uppercase() else email.take(1).uppercase(),
                                 style = MaterialTheme.typography.displaySmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFAB005A)
+                                color = pinkPrimary
                             )
                         }
                     }
@@ -209,7 +211,7 @@ fun ConfiguracionScreen(
                             .align(Alignment.BottomEnd)
                             .size(34.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFAB005A))
+                            .background(pinkPrimary)
                             .padding(6.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -226,7 +228,7 @@ fun ConfiguracionScreen(
                 text = "Datos Personales",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFAB005A)
+                color = pinkPrimary
             )
 
             OutlinedTextField(
@@ -292,7 +294,7 @@ fun ConfiguracionScreen(
                     text = "Ubicación de Envío",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFAB005A)
+                    color = pinkPrimary
                 )
                 
                 TextButton(
@@ -306,11 +308,11 @@ fun ConfiguracionScreen(
                     enabled = !isLoadingLocation
                 ) {
                     if (isLoadingLocation) {
-                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = Color(0xFFAB005A))
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = pinkPrimary)
                     } else {
-                        Icon(Icons.Default.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp), tint = pinkPrimary)
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Usar mi ubicación", style = MaterialTheme.typography.labelLarge)
+                        Text("Usar mi ubicación", style = MaterialTheme.typography.labelLarge, color = pinkPrimary)
                     }
                 }
             }
@@ -365,9 +367,9 @@ fun ConfiguracionScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFAB005A))
+                colors = ButtonDefaults.buttonColors(containerColor = pinkPrimary)
             ) {
-                Text("Actualizar Perfil", fontWeight = FontWeight.Bold)
+                Text("Actualizar Perfil", fontWeight = FontWeight.Bold, color = Color.White)
             }
         }
     }
@@ -395,6 +397,8 @@ fun CambiarPasswordDialog(onDismiss: () -> Unit, onConfirm: (String, String) -> 
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(24.dp),
         title = { Text("Cambiar Contraseña", fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {

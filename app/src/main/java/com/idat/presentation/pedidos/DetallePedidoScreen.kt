@@ -38,33 +38,37 @@ fun DetallePedidoScreen(
     val pedidos by viewModel.pedidos.collectAsState()
     val pedido = pedidos.find { it.id == pedidoId }
 
-    val pinkPrimary = Color(0xFFAB005A)
-    val surfaceColor = Color(0xFFFFF8F8)
-
     Scaffold(
-        containerColor = surfaceColor,
+        containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             TopAppBar(
                 title = { 
                     Text(
-                        "Detalle del Pedido", 
-                        fontWeight = FontWeight.ExtraBold, 
+                        text = "Detalle del Pedido", 
+                        fontWeight = FontWeight.Black, 
                         fontSize = 20.sp, 
-                        color = Color(0xFF27171C)
+                        letterSpacing = (-1).sp,
+                        color = MaterialTheme.colorScheme.onSurface
                     ) 
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = pinkPrimary)
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack, 
+                            contentDescription = "Volver", 
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
+                )
             )
         }
     ) { paddingValues ->
         if (pedido == null) {
             Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = pinkPrimary)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         } else {
             LazyColumn(
@@ -91,7 +95,7 @@ fun DetallePedidoScreen(
                         "Artículos (${pedido.items.size})",
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 18.sp,
-                        color = Color(0xFF27171C),
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
@@ -114,7 +118,10 @@ fun DetallePedidoScreen(
                             .fillMaxWidth()
                             .height(56.dp),
                         shape = RoundedCornerShape(20.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = pinkPrimary)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
                     ) {
                         Text("Regresar a mis pedidos", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
@@ -126,20 +133,24 @@ fun DetallePedidoScreen(
 
 @Composable
 fun OrderInfoSection(pedido: Pedido) {
-    val pinkPrimary = Color(0xFFAB005A)
     val (statusLabel, statusBg, statusText) = when (pedido.estado.lowercase()) {
-        "entregado" -> Triple("ENTREGADO", Color(0xFFE6F4EA), Color(0xFF1E8E3E))
-        "pendiente" -> Triple("PENDIENTE", Color(0xFFFFF7E0), Color(0xFFF2994A))
-        "procesando" -> Triple("PROCESANDO", Color(0xFFFFF7E0), Color(0xFFF09300))
-        "cancelado" -> Triple("CANCELADO", Color(0xFFFFEAEA), Color(0xFFD93025))
-        else -> Triple("EN CAMINO", Color(0xFFFFE8ED), pinkPrimary)
+        "entregado" -> Triple("ENTREGADO", MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer)
+        "pendiente" -> Triple("PENDIENTE", MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer)
+        "procesando" -> Triple("PROCESANDO", MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer)
+        "cancelado" -> Triple("CANCELADO", MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer)
+        else -> Triple("EN CAMINO", MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer)
     }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .background(Color.White)
+            .clip(RoundedCornerShape(24.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(
+                width = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = RoundedCornerShape(24.dp)
+            )
             .padding(24.dp)
     ) {
         Row(
@@ -152,12 +163,13 @@ fun OrderInfoSection(pedido: Pedido) {
                     "Pedido #${pedido.id.uppercase()}",
                     fontWeight = FontWeight.Black,
                     fontSize = 18.sp,
-                    color = Color(0xFF27171C)
+                    color = MaterialTheme.colorScheme.onSurface,
+                    letterSpacing = (-0.5).sp
                 )
                 Text(
                     SimpleDateFormat("dd MMM, yyyy - hh:mm a", Locale.getDefault()).format(Date(pedido.fecha)),
-                    fontSize = 13.sp,
-                    color = Color.Gray,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
@@ -181,21 +193,28 @@ fun OrderInfoSection(pedido: Pedido) {
 
 @Composable
 fun StatusTimeline(estado: String) {
-    val pinkPrimary = Color(0xFFAB005A)
-    val inactiveColor = Color(0xFFEEEAEB)
-
     val steps = listOf("Pendiente", "Procesando", "En camino", "Entregado")
     val currentStepIndex = steps.indexOfFirst { it.equals(estado, ignoreCase = true) }.coerceAtLeast(0)
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .background(Color.White)
+            .clip(RoundedCornerShape(24.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(
+                width = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = RoundedCornerShape(24.dp)
+            )
             .padding(24.dp)
     ) {
-        Text("Estado del Pedido", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF27171C))
-        Spacer(modifier = Modifier.height(20.dp))
+        Text(
+            "Estado del Pedido", 
+            fontWeight = FontWeight.Black, 
+            fontSize = 16.sp, 
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(modifier = Modifier.height(24.dp))
         
         steps.forEachIndexed { index, step ->
             val isActive = index <= currentStepIndex
@@ -205,32 +224,42 @@ fun StatusTimeline(estado: String) {
                         modifier = Modifier
                             .size(20.dp)
                             .clip(CircleShape)
-                            .background(if (isActive) pinkPrimary else inactiveColor),
+                            .background(if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
                         contentAlignment = Alignment.Center
                     ) {
                         if (isActive) {
-                            Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
+                            Icon(
+                                imageVector = Icons.Default.Check, 
+                                contentDescription = null, 
+                                tint = MaterialTheme.colorScheme.onPrimary, 
+                                modifier = Modifier.size(12.dp)
+                            )
                         }
                     }
                     if (index < steps.size - 1) {
                         Box(
                             modifier = Modifier
                                 .width(2.dp)
-                                .height(30.dp)
-                                .background(if (index < currentStepIndex) pinkPrimary else inactiveColor)
+                                .height(32.dp)
+                                .background(if (index < currentStepIndex) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                         )
                     }
                 }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.padding(bottom = if (index < steps.size - 1) 30.dp else 0.dp)) {
+                Spacer(modifier = Modifier.width(20.dp))
+                Column(modifier = Modifier.padding(bottom = if (index < steps.size - 1) 32.dp else 0.dp)) {
                     Text(
                         step,
-                        fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
-                        color = if (isActive) Color(0xFF27171C) else Color.Gray,
+                        fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
+                        color = if (isActive) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         fontSize = 14.sp
                     )
                     if (isActive && index == currentStepIndex) {
-                        Text("Actual", fontSize = 11.sp, color = pinkPrimary, fontWeight = FontWeight.Medium)
+                        Text(
+                            "Actual", 
+                            fontSize = 11.sp, 
+                            color = MaterialTheme.colorScheme.primary, 
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }
@@ -244,29 +273,52 @@ fun OrderDetailItemCard(nombre: String, precio: Double, cantidad: Int, imagen: S
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(
+                width = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = RoundedCornerShape(24.dp)
+            )
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage(
-            model = imagen,
-            contentDescription = null,
+        Box(
             modifier = Modifier
                 .size(70.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(Color(0xFFFFF0F2)),
-            contentScale = ContentScale.Crop
-        )
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(8.dp)
+        ) {
+            AsyncImage(
+                model = imagen,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit
+            )
+        }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(nombre, fontWeight = FontWeight.Bold, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text("S/ ${String.format("%.2f", precio)} x $cantidad", fontSize = 13.sp, color = Color.Gray)
+            Text(
+                text = nombre, 
+                fontWeight = FontWeight.Bold, 
+                fontSize = 15.sp, 
+                maxLines = 1, 
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurface,
+                letterSpacing = (-0.3).sp
+            )
+            Text(
+                text = "S/ ${String.format("%.2f", precio)} x $cantidad", 
+                fontSize = 13.sp, 
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                modifier = Modifier.padding(top = 2.dp)
+            )
         }
         Text(
             "S/ ${String.format("%.2f", precio * cantidad)}",
-            fontWeight = FontWeight.ExtraBold,
+            fontWeight = FontWeight.Black,
             fontSize = 16.sp,
-            color = Color(0xFFAB005A)
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }
@@ -277,24 +329,31 @@ fun OrderSummaryCard(total: Double) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(28.dp))
-            .background(Color(0xFF27171C))
-            .padding(24.dp)
+            .background(
+                Brush.linearGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.primary, 
+                        MaterialTheme.colorScheme.secondary
+                    )
+                )
+            )
+            .padding(28.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Subtotal", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
-            Text("S/ ${String.format("%.2f", total)}", color = Color.White, fontWeight = FontWeight.Bold)
+            Text("Subtotal", color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f), fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            Text("S/ ${String.format("%.2f", total)}", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Envío", color = Color.White.copy(alpha = 0.6f), fontSize = 14.sp)
-            Text("Gratis", color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
+            Text("Envío", color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f), fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            Text("Gratis", color = Color(0xFFD1FFD4), fontWeight = FontWeight.Bold) // Un verde más claro para mejor contraste sobre degradado
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        Divider(color = Color.White.copy(alpha = 0.1f))
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
+        Divider(color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f), thickness = 0.5.dp)
+        Spacer(modifier = Modifier.height(20.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text("Total", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Text("S/ ${String.format("%.2f", total)}", color = Color.White, fontWeight = FontWeight.Black, fontSize = 24.sp)
+            Text("Total", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text("S/ ${String.format("%.2f", total)}", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Black, fontSize = 26.sp)
         }
     }
 }

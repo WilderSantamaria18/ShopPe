@@ -52,6 +52,8 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
     var passwordVisible by remember { mutableStateOf(false) }
     var showWelcomeDialog by remember { mutableStateOf(false) }
 
+    val pinkPrimary = MaterialTheme.colorScheme.primary
+
     val loginExitoso by viewModel.loginExitoso.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val nombreUsuarioState by viewModel.nombreUsuario.collectAsState()
@@ -62,6 +64,8 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
+
+    // ... (resto del código de efectos y Google Sign-In se mantiene igual)
 
     // Cargar datos guardados si existen
     LaunchedEffect(savedEmail, savedPassword) {
@@ -118,8 +122,8 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth(0.85f)
-                    .padding(horizontal = 32.dp, vertical = 48.dp),
+                    .fillMaxWidth(0.9f) // Aumentamos un poco el ancho disponible
+                    .padding(horizontal = 24.dp, vertical = 48.dp), // Reducimos padding lateral de 32 a 24
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
@@ -154,9 +158,9 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                         onNext = { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Down) }
                     ),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        focusedBorderColor = pinkPrimary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                        cursorColor = MaterialTheme.colorScheme.primary,
+                        cursorColor = pinkPrimary,
                         focusedTextColor = MaterialTheme.colorScheme.onBackground,
                         unfocusedTextColor = MaterialTheme.colorScheme.onBackground
                     )
@@ -197,9 +201,9 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        focusedBorderColor = pinkPrimary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                        cursorColor = MaterialTheme.colorScheme.primary,
+                        cursorColor = pinkPrimary,
                         focusedTextColor = MaterialTheme.colorScheme.onBackground,
                         unfocusedTextColor = MaterialTheme.colorScheme.onBackground
                     )
@@ -214,31 +218,35 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable { viewModel.setRememberMe(!rememberMe) }
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { viewModel.setRememberMe(!rememberMe) }
                     ) {
                         Checkbox(
                             checked = rememberMe,
                             onCheckedChange = { viewModel.setRememberMe(it) },
                             colors = CheckboxDefaults.colors(
-                                checkedColor = MaterialTheme.colorScheme.secondary,
-                                uncheckedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                checkedColor = pinkPrimary,
+                                uncheckedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                             )
                         )
                         Text(
                             text = "Recuérdame",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onBackground
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     
-                    TextButton(onClick = { }) {
-                        Text(
-                            text = "¿Olvidaste tu contraseña?",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.secondary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Text(
+                        text = "¿Olvidaste tu contraseña?",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = pinkPrimary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable { /* Acción */ }
+                            .padding(horizontal = 4.dp, vertical = 8.dp)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -250,8 +258,8 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                         .height(52.dp),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        contentColor = MaterialTheme.colorScheme.onSecondary
+                        containerColor = pinkPrimary,
+                        contentColor = Color.White
                     )
                 ) {
                     Text("Iniciar sesión", fontWeight = FontWeight.Bold, fontSize = 16.sp)
@@ -315,7 +323,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                         Text(
                             text = "Regístrate",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.secondary,
+                            color = pinkPrimary,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -332,7 +340,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                     .fillMaxWidth()
                     .padding(16.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Column(
                     modifier = Modifier
@@ -344,14 +352,14 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                         modifier = Modifier
                             .size(80.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFAB005A).copy(alpha = 0.1f)),
+                            .background(pinkPrimary.copy(alpha = 0.1f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = null,
                             modifier = Modifier.size(50.dp),
-                            tint = Color(0xFFAB005A)
+                            tint = pinkPrimary
                         )
                     }
 
@@ -387,7 +395,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                             .fillMaxWidth()
                             .height(50.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFAB005A))
+                        colors = ButtonDefaults.buttonColors(containerColor = pinkPrimary)
                     ) {
                         Text("Empezar a comprar", fontWeight = FontWeight.Bold)
                     }
