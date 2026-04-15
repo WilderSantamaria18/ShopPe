@@ -92,27 +92,6 @@ fun GestionProductosScreen(
                 }
             }
         },
-        bottomBar = {
-            if (currentMode == GestionMode.LIST) {
-                ShopPeBottomNavBar(
-                    currentSelection = "Perfil",
-                    onNavigateToCatalogo = { navController.navigate("catalogo") },
-                    onNavigateToFavoritos = { navController.navigate("favoritos/fromGestion") },
-                    onNavigateToCarrito = { navController.navigate("carrito") },
-                    onNavigateToGestion = { /* Already here */ },
-                    onNavigateToPedidos = { navController.navigate("mis_pedidos") },
-                    onNavigateToAyuda = { navController.navigate("ayuda/fromGestion") },
-                    onNavigateToConfiguracion = { navController.navigate("configuracion/fromGestion") },
-                    onNavigateToPersonalizacion = { navController.navigate("personalizacion/fromGestion") },
-                    onNavigateToDirecciones = { navController.navigate("direcciones") },
-                    onCerrarSesion = { 
-                        navController.navigate("login") {
-                            popUpTo(0) { inclusive = true }
-                        }
-                    }
-                )
-            }
-        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Color(0xFFFFF8F8)
     ) { paddingValues ->
