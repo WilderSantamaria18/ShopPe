@@ -61,6 +61,22 @@ fun MisDireccionesScreen(
         )
     )
 
+    // Cuando los permisos cambien, arrancar/detener actualizaciones en tiempo real
+    LaunchedEffect(locationPermissionsState.allPermissionsGranted) {
+        if (locationPermissionsState.allPermissionsGranted) {
+            direccionesViewModel.startLocationUpdates()
+        } else {
+            direccionesViewModel.stopLocationUpdates()
+        }
+    }
+
+    // Asegurar que al salir de la pantalla detenemos las actualizaciones
+    DisposableEffect(Unit) {
+        onDispose {
+            direccionesViewModel.stopLocationUpdates()
+        }
+    }
+
     var showAddressSheet by remember { mutableStateOf(false) }
     var showLocationDialog by remember { mutableStateOf(false) }
     var selectedDireccion by remember { mutableStateOf<Direccion?>(null) }

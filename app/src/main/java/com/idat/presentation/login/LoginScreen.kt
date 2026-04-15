@@ -68,8 +68,6 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
     val snackbarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
 
-    // ... (resto del código de efectos y Google Sign-In se mantiene igual)
-
     // Cargar datos guardados si existen
     LaunchedEffect(savedEmail, savedPassword) {
         if (savedEmail.isNotEmpty()) email = savedEmail
@@ -347,7 +345,75 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
 
     // Modal de Bienvenida (se mantiene igual)
     if (showWelcomeDialog) {
-        // ... (código existente del diálogo de bienvenida)
+        Dialog(onDismissRequest = { /* Evitar dismiss por fuera; el usuario debe confirmar */ }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .background(pinkPrimary.copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(50.dp),
+                            tint = pinkPrimary
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = "¡Bienvenido, ${nombreUsuarioState}!",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Has iniciado sesión correctamente.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Button(
+                        onClick = {
+                            showWelcomeDialog = false
+                            // Navegar al catálogo y remover la pantalla de login del backstack
+                            navController.navigate("catalogo") {
+                                popUpTo("login") { inclusive = true }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = pinkPrimary)
+                    ) {
+                        Text("Empezar a comprar", fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
     }
 
     // Modal de Recuperar Contraseña (Estilo Bento)
