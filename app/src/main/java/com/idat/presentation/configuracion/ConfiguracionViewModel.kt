@@ -1,14 +1,8 @@
 package com.idat.presentation.configuracion
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.location.Geocoder
 import android.net.Uri
-import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
@@ -22,8 +16,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import java.util.Locale
 import javax.inject.Inject
+import android.content.Context
 
 @HiltViewModel
 class ConfiguracionViewModel @Inject constructor(
@@ -34,7 +28,6 @@ class ConfiguracionViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val storage = FirebaseStorage.getInstance()
-    private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
     private val _usuario = MutableStateFlow<Usuario?>(null)
     val usuario = _usuario.asStateFlow()
@@ -53,16 +46,6 @@ class ConfiguracionViewModel @Inject constructor(
 
     private val _isUploading = MutableStateFlow(false)
     val isUploading: StateFlow<Boolean> = _isUploading
-
-    private val _isLoadingLocation = MutableStateFlow(false)
-    val isLoadingLocation: StateFlow<Boolean> = _isLoadingLocation
-
-    // Estados temporales para la ubicación detectada
-    private val _ubicacionDetectada = MutableStateFlow<Pair<String, String>?>(null) // Pair(Distrito, Departamento)
-    val ubicacionDetectada: StateFlow<Pair<String, String>?> = _ubicacionDetectada
-
-    private var latitudActual: Double? = null
-    private var longitudActual: Double? = null
 
     init {
         auth.currentUser?.let { user ->
@@ -87,68 +70,6 @@ class ConfiguracionViewModel @Inject constructor(
         viewModelScope.launch {
             usuarioRepository.getUsuario(uid).collect { user ->
                 _usuario.value = user
-                latitudActual = user?.latitud
-                longitudActual = user?.longitud
-            }
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    fun obtenerUbicacionActual() {
-        _isLoadingLocation.value = true
-        viewModelScope.launch {
-            try {
-                val location = fusedLocationClient.getCurrentLocation(
-                    Priority.PRIORITY_HIGH_ACCURACY,
-                    null
-                ).await()
-
-                location?.let {
-                    latitudActual = it.latitude
-                    longitudActual = it.longitude
-                    
-                    val geocoder = Geocoder(context, Locale("es", "PE"))
-                    
-                    // Manejo de Geocoder para versiones nuevas y antiguas
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        geocoder.getFromLocation(it.latitude, it.longitude, 1) { addresses ->
-                            if (addresses.isNotEmpty()) {
-                                val address = addresses[0]
-                                // Priorizamos locality (Distrito) sobre subLocality (A.H./Urb)
-                                val distrito = address.locality ?: address.subLocality ?: ""
-                                
-                                // Limpiamos "Provincia de" si aparece en el departamento
-                                var departamento = address.adminArea ?: ""
-                                if (departamento.contains("Provincia de", ignoreCase = true)) {
-                                    departamento = departamento.replace("Provincia de", "", ignoreCase = true).trim()
-                                }
-                                
-                                _ubicacionDetectada.value = Pair(distrito, departamento)
-                            }
-                        }
-                    } else {
-                        @Suppress("DEPRECATION")
-                        val addresses = geocoder.getFromLocation(it.latitude, it.longitude, 1)
-                        if (!addresses.isNullOrEmpty()) {
-                            val address = addresses[0]
-                            // Priorizamos locality (Distrito) sobre subLocality (A.H./Urb)
-                            val distrito = address.locality ?: address.subLocality ?: ""
-                            
-                            var departamento = address.adminArea ?: ""
-                            if (departamento.contains("Provincia de", ignoreCase = true)) {
-                                departamento = departamento.replace("Provincia de", "", ignoreCase = true).trim()
-                            }
-
-                            _ubicacionDetectada.value = Pair(distrito, departamento)
-                        }
-                    }
-                } ?: run {
-                    _errorMessage.value = "No se pudo obtener la ubicación. Activa tu GPS."
-                }
-            } catch (e: Exception) {
-                _errorMessage.value = "Error al obtener ubicación: ${e.localizedMessage}"
-            } finally {
-                _isLoadingLocation.value = false
             }
         }
     }
@@ -182,15 +103,17 @@ class ConfiguracionViewModel @Inject constructor(
         nombre: String,
         apellido: String,
         dni: String,
-        telefono: String,
-        direccion: String,
-        distrito: String,
-        departamento: String
+        telefono: String
     ) {
         viewModelScope.launch {
             val uid = auth.currentUser?.uid ?: return@launch
             val email = auth.currentUser?.email ?: ""
             val fotoUrlActual = _usuario.value?.fotoUrl ?: ""
+            val direccionActual = _usuario.value?.direccion ?: ""
+            val distritoActual = _usuario.value?.distrito ?: ""
+            val departamentoActual = _usuario.value?.departamento ?: ""
+            val latitudActual = _usuario.value?.latitud
+            val longitudActual = _usuario.value?.longitud
             
             val nuevoUsuario = Usuario(
                 uid = uid,
@@ -199,9 +122,9 @@ class ConfiguracionViewModel @Inject constructor(
                 email = email,
                 dni = dni,
                 telefono = telefono,
-                direccion = direccion,
-                distrito = distrito,
-                departamento = departamento,
+                direccion = direccionActual,
+                distrito = distritoActual,
+                departamento = departamentoActual,
                 fotoUrl = fotoUrlActual,
                 latitud = latitudActual,
                 longitud = longitudActual
@@ -246,6 +169,5 @@ class ConfiguracionViewModel @Inject constructor(
     fun clearMessages() {
         _errorMessage.value = null
         _successMessage.value = null
-        _ubicacionDetectada.value = null
     }
 }

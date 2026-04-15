@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Visibility
@@ -45,11 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConfiguracionScreen(
     navController: NavHostController,
@@ -60,18 +55,11 @@ fun ConfiguracionScreen(
     val errorMessage by viewModel.errorMessage.collectAsState()
     val successMessage by viewModel.successMessage.collectAsState()
     val isUploading by viewModel.isUploading.collectAsState()
-    val isLoadingLocation by viewModel.isLoadingLocation.collectAsState()
-    val ubicacionDetectada by viewModel.ubicacionDetectada.collectAsState()
     
     val pinkPrimary = MaterialTheme.colorScheme.primary
 
     val snackbarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
-
-    // Permiso de Ubicación
-    val locationPermissionState = rememberPermissionState(
-        permission = Manifest.permission.ACCESS_FINE_LOCATION
-    )
 
     // Launcher para seleccionar imagen
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -85,9 +73,6 @@ fun ConfiguracionScreen(
     var apellido by remember { mutableStateOf("") }
     var dni by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
-    var direccion by remember { mutableStateOf("") }
-    var distrito by remember { mutableStateOf("") }
-    var departamento by remember { mutableStateOf("") }
     var fotoUrl by remember { mutableStateOf("") }
 
     var showPasswordDialog by remember { mutableStateOf(false) }
@@ -99,20 +84,9 @@ fun ConfiguracionScreen(
             apellido = it.apellido
             dni = it.dni
             telefono = it.telefono
-            direccion = it.direccion
-            distrito = it.distrito
-            departamento = it.departamento
             
             val firebaseUser = FirebaseAuth.getInstance().currentUser
             fotoUrl = if (it.fotoUrl.isNotEmpty()) it.fotoUrl else firebaseUser?.photoUrl?.toString() ?: ""
-        }
-    }
-
-    // Actualizar campos cuando el GPS detecte algo
-    LaunchedEffect(ubicacionDetectada) {
-        ubicacionDetectada?.let { (nuevoDistrito, nuevoDepartamento) ->
-            if (nuevoDistrito.isNotEmpty()) distrito = nuevoDistrito
-            if (nuevoDepartamento.isNotEmpty()) departamento = nuevoDepartamento
         }
     }
 
@@ -143,7 +117,7 @@ fun ConfiguracionScreen(
                 },
                 actions = {
                     IconButton(onClick = {
-                        viewModel.guardarPerfil(nombre, apellido, dni, telefono, direccion, distrito, departamento)
+                        viewModel.guardarPerfil(nombre, apellido, dni, telefono)
                     }) {
                         Icon(Icons.Default.Save, contentDescription = "Guardar", tint = pinkPrimary)
                     }
@@ -160,20 +134,24 @@ fun ConfiguracionScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 20.dp)
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(10.dp))
+            // Espaciador superior para separar del TopAppBar
+            Spacer(modifier = Modifier.height(4.dp))
 
-            // Cabecera con Foto
+            // Cabecera con Foto - Sin espacios sobrantes
             Box(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
                     modifier = Modifier
-                        .size(110.dp)
+                        .size(90.dp)
                         .clickable { if (!isUploading) galleryLauncher.launch("image/*") },
                     contentAlignment = Alignment.Center
                 ) {
@@ -185,14 +163,14 @@ fun ConfiguracionScreen(
                                 .build(),
                             contentDescription = "Foto de perfil",
                             modifier = Modifier
-                                .size(100.dp)
+                                .size(90.dp)
                                 .clip(CircleShape),
                             contentScale = ContentScale.Crop
                         )
                     } else {
                         Box(
                             modifier = Modifier
-                                .size(100.dp)
+                                .size(90.dp)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center
@@ -209,16 +187,16 @@ fun ConfiguracionScreen(
                     Box(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
-                            .size(34.dp)
+                            .size(32.dp)
                             .clip(CircleShape)
                             .background(pinkPrimary)
-                            .padding(6.dp),
+                            .padding(4.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         if (isUploading) {
-                            CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
+                            CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
                         } else {
-                            Icon(Icons.Default.CameraAlt, contentDescription = "Cambiar foto", tint = Color.White, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.CameraAlt, contentDescription = "Cambiar foto", tint = Color.White, modifier = Modifier.size(16.dp))
                         }
                     }
                 }
@@ -228,7 +206,10 @@ fun ConfiguracionScreen(
                 text = "Datos Personales",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = pinkPrimary
+                color = pinkPrimary,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
             )
 
             OutlinedTextField(
@@ -238,15 +219,21 @@ fun ConfiguracionScreen(
                 readOnly = true,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = false,
-                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) }
+                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                singleLine = true
             )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 OutlinedTextField(
                     value = nombre,
                     onValueChange = { nombre = it },
                     label = { Text("Nombres") },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .wrapContentHeight(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Next) })
@@ -255,7 +242,9 @@ fun ConfiguracionScreen(
                     value = apellido,
                     onValueChange = { apellido = it },
                     label = { Text("Apellidos") },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .wrapContentHeight(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Next) })
@@ -266,7 +255,9 @@ fun ConfiguracionScreen(
                 value = dni,
                 onValueChange = { if (it.length <= 8) dni = it },
                 label = { Text("DNI") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Next) })
@@ -276,101 +267,44 @@ fun ConfiguracionScreen(
                 value = telefono,
                 onValueChange = { telefono = it },
                 label = { Text("Teléfono de contacto") },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
-                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Next) })
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // Sección Ubicación con Botón GPS
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Ubicación de Envío",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = pinkPrimary
-                )
-                
-                TextButton(
-                    onClick = {
-                        if (locationPermissionState.status.isGranted) {
-                            viewModel.obtenerUbicacionActual()
-                        } else {
-                            locationPermissionState.launchPermissionRequest()
-                        }
-                    },
-                    enabled = !isLoadingLocation
-                ) {
-                    if (isLoadingLocation) {
-                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = pinkPrimary)
-                    } else {
-                        Icon(Icons.Default.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp), tint = pinkPrimary)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Usar mi ubicación", style = MaterialTheme.typography.labelLarge, color = pinkPrimary)
-                    }
-                }
-            }
-
-            OutlinedTextField(
-                value = direccion,
-                onValueChange = { direccion = it },
-                label = { Text("Dirección (Calle / Av / Jr)") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Next) })
-            )
-
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = distrito,
-                    onValueChange = { distrito = it },
-                    label = { Text("Distrito") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Next) })
-                )
-                OutlinedTextField(
-                    value = departamento,
-                    onValueChange = { departamento = it },
-                    label = { Text("Departamento") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
-                )
-            }
-
             val isGoogleUser = FirebaseAuth.getInstance().currentUser?.providerData?.any { it.providerId == "google.com" } ?: false
             
             if (!isGoogleUser) {
-                Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = { showPasswordDialog = true },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 44.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                 ) {
                     Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Cambiar Contraseña")
+                    Text("Cambiar Contraseña", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 }
             }
 
             Button(
-                onClick = { viewModel.guardarPerfil(nombre, apellido, dni, telefono, direccion, distrito, departamento) },
+                onClick = { viewModel.guardarPerfil(nombre, apellido, dni, telefono) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp),
+                    .heightIn(min = 48.dp)
+                    .padding(vertical = 4.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = pinkPrimary)
             ) {
-                Text("Actualizar Perfil", fontWeight = FontWeight.Bold, color = Color.White)
+                Text("Actualizar Perfil", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
             }
+            
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 
@@ -401,40 +335,65 @@ fun CambiarPasswordDialog(onDismiss: () -> Unit, onConfirm: (String, String) -> 
         shape = RoundedCornerShape(24.dp),
         title = { Text("Cambiar Contraseña", fontWeight = FontWeight.Bold) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+            ) {
                 OutlinedTextField(
-                    value = currentPassword, onValueChange = { currentPassword = it }, label = { Text("Contraseña actual") }, singleLine = true,
+                    value = currentPassword,
+                    onValueChange = { currentPassword = it },
+                    label = { Text("Contraseña actual") },
+                    singleLine = true,
                     visualTransformation = if (currentPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = { currentPasswordVisible = !currentPasswordVisible }) {
                             Icon(if (currentPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff, "Toggle visibility")
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
                 )
                 OutlinedTextField(
-                    value = newPassword, onValueChange = { newPassword = it }, label = { Text("Nueva contraseña") }, singleLine = true,
+                    value = newPassword,
+                    onValueChange = { newPassword = it },
+                    label = { Text("Nueva contraseña") },
+                    singleLine = true,
                     visualTransformation = if (newPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
                             Icon(if (newPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff, "Toggle visibility")
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
                 )
                 OutlinedTextField(
-                    value = confirmPassword, onValueChange = { confirmPassword = it }, label = { Text("Confirmar contraseña") }, singleLine = true,
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text("Confirmar contraseña") },
+                    singleLine = true,
                     visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                             Icon(if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff, "Toggle visibility")
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
                     isError = error.isNotEmpty()
                 )
                 if (error.isNotEmpty()) {
-                    Text(text = error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
         },
@@ -448,14 +407,22 @@ fun CambiarPasswordDialog(onDismiss: () -> Unit, onConfirm: (String, String) -> 
                         newPassword != confirmPassword -> error = "Las contraseñas no coinciden"
                         else -> onConfirm(currentPassword, newPassword)
                     }
-                }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 44.dp)
             ) {
-                Text("Cambiar")
+                Text("Cambiar", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 44.dp)
+            ) {
+                Text("Cancelar", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     )

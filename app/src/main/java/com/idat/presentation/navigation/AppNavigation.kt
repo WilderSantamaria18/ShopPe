@@ -51,6 +51,7 @@ fun AppNavigation(navController: NavHostController) {
     val shouldShowNavBar = currentRoute != null && !screensWithoutNavBar.any { currentRoute.startsWith(it) }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (shouldShowNavBar) {
                 ShopPeBottomNavBar(

@@ -37,7 +37,8 @@ fun CatalogoScreen(
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             ShopPeHomeScreen(

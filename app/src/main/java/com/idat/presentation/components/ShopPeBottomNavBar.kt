@@ -46,7 +46,8 @@ fun ShopPeBottomNavBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(bottom = 24.dp, start = 12.dp, end = 12.dp)
+            .navigationBarsPadding()
+            .padding(bottom = 12.dp, start = 12.dp, end = 12.dp)
             .clip(RoundedCornerShape(32.dp))
             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f))
             .shadow(

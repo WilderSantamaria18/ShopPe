@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,13 +20,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.idat.domain.model.Categoria
 import com.idat.domain.model.Producto
 import com.idat.presentation.components.ProductItem
-import com.idat.presentation.components.ShopPeBottomNavBar
 import com.idat.presentation.components.shimmerEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,6 +58,14 @@ fun ShopPeHomeScreen(
 ) {
     // Usamos los colores definidos en AppTheme
     val outlineColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+    val configuration = LocalConfiguration.current
+    val isCompactWidth = configuration.screenWidthDp < 360
+    val isCompactHeight = configuration.screenHeightDp < 700
+
+    val horizontalPadding = if (isCompactWidth) 16.dp else 24.dp
+    val topSpacing = if (isCompactHeight) 8.dp else 16.dp
+    val searchToChipsSpacing = if (isCompactHeight) 16.dp else 24.dp
+    val chipsToProductsSpacing = if (isCompactHeight) 20.dp else 32.dp
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -93,9 +100,9 @@ fun ShopPeHomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = horizontalPadding)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(topSpacing))
 
             // Search Bar
             val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
@@ -128,7 +135,7 @@ fun ShopPeHomeScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(searchToChipsSpacing))
 
             // Category Chips
             val scrollState = rememberScrollState()
@@ -147,7 +154,7 @@ fun ShopPeHomeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(chipsToProductsSpacing))
 
             // Product View
             if (isLoading && products.isEmpty()) {
